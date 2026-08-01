@@ -22,8 +22,8 @@ When you write in, it helps to include:
 
 ## Common questions
 
-Most answers live on the [home page FAQ](/#faq). For release notes see the
-[changelog](/changelog/).
+Most answers live on the [home page FAQ](/#faq).{% if sections.changelog %} For
+release notes see the [changelog](/changelog/).{% endif %}
 
 ## Privacy and terms
 

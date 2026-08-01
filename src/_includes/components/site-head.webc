@@ -71,13 +71,16 @@
   />
   <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
+  <!-- Only advertise a feed that exists — see src/_data/sections.js. -->
   <link
+    webc:if="$data.sections.blog"
     rel="alternate"
     type="application/atom+xml"
     :title="`${$data.site.name} blog`"
     href="/blog.xml"
   />
   <link
+    webc:if="$data.sections.changelog"
     rel="alternate"
     type="application/atom+xml"
     :title="`${$data.site.name} release notes`"
