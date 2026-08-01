@@ -7,8 +7,8 @@ changelog, blog and legal pages, with structured data, Open Graph cards, two
 Atom feeds, a sitemap and a GitHub Pages deploy. Everything a new app site needs
 before it needs anything specific.
 
-Every string starts as a `TODO:` placeholder. `npm run check:todos` fails until
-they are gone, so a placeholder cannot ship by accident.
+Every string starts as a placeholder. `npm run check:todos` fails until they are
+gone, so a placeholder cannot ship by accident.
 
 ## Quick start
 
@@ -76,7 +76,7 @@ will not bring the section back.
 | `npm run build` | Build to `_site/` |
 | `npm run setup` | Interactive first-run configuration |
 | `npm run check` | `check:todos` then `check:og` |
-| `npm run check:todos` | Fails while `TODO:` placeholders remain |
+| `npm run check:todos` | Fails while placeholders remain |
 | `npm run check:og` | Validates social-card metadata against the built output |
 | `npm run icons` | Icon set from `icon.png` (needs ImageMagick) |
 | `npm run og` | 1200×630 social cards (needs librsvg) |
@@ -104,7 +104,10 @@ will not bring the section back.
   mode and white to dark via `<picture>`. Do not redraw or restyle them — Apple's
   [guidelines](https://developer.apple.com/app-store/marketing/guidelines/)
   require the badge as supplied, at 40px height or more, with clear space around
-  it. A badge only appears once its store URL is set in `site.js`.
+  it. A badge only appears once its store URL is set in `site.js`. A universal
+  purchase has one product page for every platform: set `appStoreUrl` and
+  `macAppStoreUrl` to the same URL and only the App Store badge renders, which
+  is the correct one for a single listing.
 
 ## Deploying
 

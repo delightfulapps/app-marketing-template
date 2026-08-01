@@ -17,7 +17,7 @@
     webc:if="!anyStoreConfigured($data.site)"
     class="rounded-card border border-dashed border-border px-5 py-3 text-sm text-muted"
   >
-    TODO: set <code class="font-mono">appStoreUrl</code> in
+    Set <code class="font-mono">appStoreUrl</code> in
     <code class="font-mono">src/_data/site.js</code> to show the download badges.
   </p>
 </div>

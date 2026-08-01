@@ -4,7 +4,9 @@
     return [
       ["App", site.name],
       ["Publisher", site.publisher],
-      ["Category", site.appCategory],
+      // appCategory is the schema.org token, which is not English — show
+      // appCategoryLabel to readers and keep the token for the structured data.
+      ["Category", site.appCategoryLabel || site.appCategory],
       ["Platforms", site.operatingSystems],
       ["Pricing", site.pricingNote],
       ["Website", site.url],
@@ -12,11 +14,18 @@
     ];
   }
 
+  // Same dedupe as app-store-badge.webc: a universal purchase points both keys
+  // at one product page, and listing it twice would just look like an error.
   function stores(site) {
     return [
       ["App Store", site.appStoreUrl],
       ["Mac App Store", site.macAppStoreUrl],
-    ].filter(([, url]) => url && !url.startsWith("TODO"));
+    ].filter(
+      ([label, url]) =>
+        url &&
+        !url.startsWith("TODO") &&
+        !(label === "Mac App Store" && url === site.appStoreUrl),
+    );
   }
 </script>
 
