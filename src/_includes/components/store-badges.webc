@@ -1,0 +1,23 @@
+<script webc:setup>
+  // Pure function — see the note in site-head.webc about webc:setup.
+  function anyStoreConfigured(site) {
+    return [site.appStoreUrl, site.macAppStoreUrl].some(
+      (url) => url && !url.startsWith("TODO"),
+    );
+  }
+</script>
+
+<div class="flex flex-wrap items-center justify-center gap-4">
+  <app-store-badge store="ios" :@size="size || 'lg'"></app-store-badge>
+  <app-store-badge store="mac" :@size="size || 'lg'"></app-store-badge>
+
+  <!-- Stops the call to action reading as a broken empty box before the store
+       URLs are filled in. Disappears the moment either one is set. -->
+  <p
+    webc:if="!anyStoreConfigured($data.site)"
+    class="rounded-card border border-dashed border-border px-5 py-3 text-sm text-muted"
+  >
+    TODO: set <code class="font-mono">appStoreUrl</code> in
+    <code class="font-mono">src/_data/site.js</code> to show the download badges.
+  </p>
+</div>

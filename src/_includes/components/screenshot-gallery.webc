@@ -1,0 +1,27 @@
+<script webc:setup>
+  // Pure function — see the note in site-head.webc about webc:setup.
+  function populated(screenshots) {
+    return Object.keys(screenshots).filter(
+      (key) => screenshots[key].items.length,
+    );
+  }
+</script>
+
+<!-- Hides itself entirely until there are screenshots in
+     src/assets/screenshots/<platform>/. -->
+<section
+  webc:if="populated($data.screenshots).length"
+  class="section border-t border-border"
+  id="screenshots"
+>
+  <div class="container-page">
+    <h2 class="section-heading">A look around</h2>
+
+    <div class="mt-10 space-y-12">
+      <screenshot-grid
+        webc:for="name of populated($data.screenshots)"
+        :@platform="name"
+      ></screenshot-grid>
+    </div>
+  </div>
+</section>

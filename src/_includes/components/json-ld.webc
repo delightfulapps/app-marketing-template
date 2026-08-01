@@ -1,0 +1,87 @@
+<script webc:setup>
+  // One @graph for the homepage: who publishes the site, the site itself, the
+  // app being marketed, and the FAQ. The FAQ entries come from the same
+  // markdown collection the visible FAQ renders, so the two can never drift.
+  function buildGraph(data) {
+    const { site, collections, screenshots } = data;
+    const abs = (path) => new URL(path, site.url).href;
+    const storeUrl = [site.appStoreUrl, site.macAppStoreUrl].find(
+      (u) => u && !u.startsWith("TODO"),
+    );
+
+    const shots = Object.values(screenshots ?? {})
+      .flatMap((group) => group.items)
+      .map((s) => abs(s.url));
+
+    // schema.org wants prose here, and the markdown has already been rendered
+    // to HTML for the visible FAQ — so flatten the tags back out.
+    const plain = (html) =>
+      String(html ?? "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&(amp|lt|gt|quot|#39);/g, (_, e) =>
+          ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[e],
+        )
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const faqEntries = (collections?.faq ?? []).map((item) => ({
+      "@type": "Question",
+      name: item.data.title,
+      acceptedAnswer: { "@type": "Answer", text: plain(item.content) },
+    }));
+
+    const graph = [
+      {
+        "@type": "Organization",
+        "@id": `${site.url}/#organization`,
+        name: site.publisher,
+        url: site.url,
+        logo: abs("/assets/icons/icon-512.png"),
+        email: site.supportEmail,
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${site.url}/#website`,
+        url: site.url,
+        name: site.name,
+        description: site.description,
+        inLanguage: site.locale.replace("_", "-"),
+        publisher: { "@id": `${site.url}/#organization` },
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": `${site.url}/#app`,
+        name: site.name,
+        description: site.description,
+        applicationCategory: site.appCategory,
+        operatingSystem: site.operatingSystems,
+        publisher: { "@id": `${site.url}/#organization` },
+        ...(storeUrl ? { downloadUrl: storeUrl, installUrl: storeUrl } : {}),
+        ...(shots.length ? { screenshot: shots } : {}),
+        offers: {
+          "@type": "Offer",
+          price: site.price,
+          priceCurrency: site.priceCurrency,
+        },
+      },
+    ];
+
+    if (faqEntries.length) {
+      graph.push({
+        "@type": "FAQPage",
+        "@id": `${site.url}/#faq`,
+        mainEntity: faqEntries,
+      });
+    }
+
+    return JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+  }
+</script>
+
+<!-- @raw, not @html: @html re-parses the value as markup, which entity-encodes
+     the angle brackets and drops the backslashes JSON needs. -->
+<script
+  type="application/ld+json"
+  @raw="buildGraph($data)"
+  webc:keep
+></script>

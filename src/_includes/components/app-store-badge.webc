@@ -1,0 +1,33 @@
+<script webc:setup>
+  // Pure helpers only — see the note in site-head.webc about webc:setup being
+  // evaluated once per build. Two badges render on the same page, so nothing
+  // instance-specific may be cached here either.
+  function storeUrl(store, site) {
+    const url = store === "mac" ? site.macAppStoreUrl : site.appStoreUrl;
+    return url && !url.startsWith("TODO") ? url : "";
+  }
+
+  function storeLabel(store) {
+    return store === "mac"
+      ? "Download on the Mac App Store"
+      : "Download on the App Store";
+  }
+</script>
+
+<!-- store="ios" | "mac", size="lg" for the download section. Renders nothing
+     when site.js has no real URL for that store, so an iOS-only or Mac-only
+     site needs no template change. -->
+<a
+  webc:if="storeUrl(store, $data.site)"
+  :href="storeUrl(store, $data.site)"
+  :aria-label="storeLabel(store)"
+  class="inline-block transition-opacity hover:opacity-85"
+>
+  <img
+    :src="store === 'mac' ? '/assets/appstore-mac.svg' : '/assets/appstore-ios.svg'"
+    :alt="storeLabel(store)"
+    :height="size === 'lg' ? 56 : 44"
+    :width="size === 'lg' ? 166 : 130"
+    eleventy:ignore
+  />
+</a>

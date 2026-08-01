@@ -1,0 +1,47 @@
+<script webc:setup>
+  // Anchors are how the Atom feed links to an individual release, since
+  // releases are sections of this page rather than pages of their own.
+  // Pure function — see the note in site-head.webc about webc:setup.
+  function anchor(version) {
+    return `v${String(version).replace(/\./g, "-")}`;
+  }
+
+  function longDate(value) {
+    return new Date(value).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+  }
+</script>
+
+<div>
+  <p webc:if="!$data.collections.releases.length" class="text-muted">
+    No releases yet.
+  </p>
+
+  <ol class="space-y-12">
+    <li
+      webc:for="release of $data.collections.releases"
+      :id="anchor(release.data.version)"
+    >
+      <div class="flex flex-wrap items-baseline gap-x-4">
+        <h2 class="text-xl font-semibold">
+          <a
+            :href="`#${anchor(release.data.version)}`"
+            class="hover:text-brand"
+            @text="release.data.version"
+          ></a>
+        </h2>
+        <time
+          :datetime="new Date(release.data.date).toISOString().slice(0, 10)"
+          class="text-sm text-muted"
+          @text="longDate(release.data.date)"
+        ></time>
+      </div>
+
+      <div class="prose prose-page mt-3" @html="release.content"></div>
+    </li>
+  </ol>
+</div>

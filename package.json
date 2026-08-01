@@ -1,0 +1,29 @@
+{
+  "name": "app-marketing-template",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Eleventy template for app marketing sites",
+  "scripts": {
+    "build": "eleventy",
+    "serve": "eleventy --serve --quiet",
+    "clean": "rm -rf _site src/assets/css/site.css",
+    "setup": "node tools/setup.mjs",
+    "check": "node tools/check-todos.mjs && node tools/check-og.mjs",
+    "check:todos": "node tools/check-todos.mjs",
+    "check:og": "node tools/check-og.mjs",
+    "icons": "node tools/generate-icons.mjs",
+    "og": "node tools/generate-og.mjs"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^3.1.6",
+    "@11ty/eleventy-img": "^7.0.0",
+    "@11ty/eleventy-navigation": "^1.0.5",
+    "@11ty/eleventy-plugin-rss": "^3.0.0",
+    "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
+    "@11ty/eleventy-plugin-webc": "^0.11.2",
+    "@tailwindcss/cli": "^4.3.3",
+    "@tailwindcss/typography": "^0.5.20",
+    "tailwindcss": "^4.3.3"
+  }
+}
