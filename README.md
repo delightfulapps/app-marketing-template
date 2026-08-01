@@ -92,7 +92,11 @@ will not bring the section back.
 - **Brand colour lives only in `site.js`.** `site-head.webc` emits it as CSS
   custom properties; `tailwind.css` maps its `@theme` tokens onto those
   variables; the manifest and `theme-color` metas read the same values. Light
-  and dark are both handled — no colour is hardcoded in CSS.
+  and dark are both handled — no colour is hardcoded in CSS. A very dark or
+  very light brand colour needs `themeColorDark` set too, otherwise it vanishes
+  into one of the two page backgrounds; mid-range colours can leave it empty.
+  The text drawn *on* the brand colour is derived from its luminance, so there
+  is no second knob to forget.
 - **SEO is computed once** in `src/src.11tydata.js`. Pages set optional front
   matter (`title`, `description`, `ogImage`, `ogType`, `updated`, `noindex`) and
   every title, canonical URL and card tag follows.

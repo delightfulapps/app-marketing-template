@@ -3,10 +3,41 @@
   // once per page — a `const` here would freeze the first page's values into
   // every page. So it holds pure functions only, and everything page-specific
   // is read from $data at the point of use. Same rule in every component here.
+  // Relative luminance, per WCAG. Accepts #rgb and #rrggbb(aa); alpha is
+  // ignored because the brand colour is only ever painted on an opaque surface.
+  function luminance(hex) {
+    const h = String(hex).replace("#", "");
+    const full = h.length < 6 ? h.slice(0, 3).replace(/./g, (c) => c + c) : h;
+    const channel = (i) => {
+      const v = parseInt(full.slice(i * 2, i * 2 + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * channel(0) + 0.7152 * channel(1) + 0.0722 * channel(2);
+  }
+
+  // What to print on top of the brand colour. Derived rather than configured:
+  // a site whose brand is light needs dark button text, and having to remember
+  // to flip a second knob is how that gets shipped wrong.
+  //
+  // White and near-black give equal contrast against a background of luminance
+  // ~0.19 — solve 1.05/(L+0.05) = (L+0.05)/0.055 — so that is the crossover.
+  // Eyeballing a higher threshold keeps white text well past the point where
+  // dark text is the more legible of the two.
+  function onBrand(hex) {
+    return luminance(hex) > 0.19 ? "#0b0b0e" : "#ffffff";
+  }
+
+  // Dark mode gets its own brand colour when `themeColorDark` is set. Sites
+  // whose brand sits mid-range look fine either way and can leave it unset;
+  // a very dark or very light brand needs it, or it vanishes into one of the
+  // two backgrounds.
   function brandTokens(site) {
+    const dark = site.themeColorDark || site.themeColor;
     return (
-      `:root{--brand:${site.themeColor};--bg:${site.backgroundColor}}` +
-      `@media(prefers-color-scheme:dark){:root{--bg:${site.backgroundColorDark}}}`
+      `:root{--brand:${site.themeColor};--brand-fg:${onBrand(site.themeColor)};` +
+      `--bg:${site.backgroundColor}}` +
+      `@media(prefers-color-scheme:dark){:root{--brand:${dark};` +
+      `--brand-fg:${onBrand(dark)};--bg:${site.backgroundColorDark}}}`
     );
   }
 </script>
