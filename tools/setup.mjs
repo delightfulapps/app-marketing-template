@@ -48,6 +48,12 @@ const FIELDS = [
     prompt: "Brand colour (hex)",
     validate: (v) => /^#[0-9a-f]{3,8}$/i.test(v) || "Expected a hex colour like #1d4ed8",
   },
+  {
+    key: "themeColorDark",
+    prompt: "Brand colour for dark mode (blank to reuse the one above)",
+    optional: true,
+    validate: (v) => /^#[0-9a-f]{3,8}$/i.test(v) || "Expected a hex colour like #78a3d3",
+  },
   { key: "appCategory", prompt: "schema.org application category" },
   {
     key: "appCategoryLabel",

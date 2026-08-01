@@ -33,7 +33,12 @@ export default {
   // as CSS custom properties, Tailwind's @theme maps its tokens onto them,
   // and site.webmanifest and the theme-color metas read them too. Nothing
   // else in the project should hardcode a brand colour.
+  // themeColorDark is optional: leave it empty and dark mode reuses themeColor.
+  // Set it when the brand colour is very dark or very light, or it disappears
+  // into one of the two page backgrounds. Text drawn on top of the brand colour
+  // is derived from its luminance, so there is no matching knob for that.
   themeColor: "#1d4ed8", // TODO: your brand colour
+  themeColorDark: "",
   backgroundColor: "#fbfbfa", // TODO: light-mode page background
   backgroundColorDark: "#101014", // TODO: dark-mode page background
 
