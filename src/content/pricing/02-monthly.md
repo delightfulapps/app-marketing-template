@@ -1,11 +1,9 @@
 ---
-title: "TODO: Pro"
+title: "TODO: Pro Monthly"
 price: "$TODO"
-period: "per year"
+period: "per month"
 order: 2
-featured: true
-cta: "Start free trial"
-ctaUrl: ""
+featured: false
 ---
 
 - TODO: everything in Free, plus…

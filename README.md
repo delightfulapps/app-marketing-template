@@ -44,6 +44,13 @@ reorder by changing `order` in its front matter; remove a section entirely by
 deleting its files — each homepage section hides itself when its collection is
 empty.
 
+Pricing tiers ship as Free, Pro Monthly and Pro Annual. A tier may set an
+optional `note` in its front matter, rendered in the brand colour under the
+price — that is where an annual plan states its saving. The call to action on
+`/pricing/` is the App Store badge itself, shared by every tier, so it comes from
+`appStoreUrl` and `macAppStoreUrl` in `src/_data/site.js` and needs no per-tier
+link.
+
 ### Optional sections
 
 The blog and the changelog disappear completely when they have no content, so

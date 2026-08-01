@@ -4,8 +4,6 @@ price: "$0"
 period: "forever"
 order: 1
 featured: false
-cta: "Download"
-ctaUrl: ""
 ---
 
 - TODO: what the free tier includes
