@@ -137,13 +137,14 @@ console.log(`Still to do:
 
   1. Replace src/assets/icon.png with your 1024x1024 app icon,
      then run:  npm run icons && npm run og
-  2. Replace src/assets/appstore-ios.svg and appstore-mac.svg with Apple's
-     official badges — https://developer.apple.com/app-store/marketing/guidelines/
-  3. Drop screenshots into src/assets/screenshots/{ios,macos,visionos}/
+  2. Drop screenshots into src/assets/screenshots/{ios,macos,visionos}/
      (numbered, e.g. 01_home.png — the filename becomes the alt text)
-  4. Write the content in src/content/{features,faq,pricing,releases}/
-  5. Replace src/privacy.md, src/terms.md and src/support.md with real copy
-  6. Fill in the press kit prose in src/press-kit.webc
+  3. Write the content in src/content/{features,faq,pricing,releases}/
+  4. Replace src/privacy.md, src/terms.md and src/support.md with real copy
+  5. Fill in the press kit prose in src/press-kit.webc
+
+The App Store badges are already Apple's official artwork and appear as soon as
+a store URL above is set — no asset work needed there.
 
 Then run \`npm run check\` — it fails until every TODO: placeholder is gone.
 `);
