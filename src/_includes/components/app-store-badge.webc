@@ -30,9 +30,15 @@
     return BADGES[store] ?? BADGES.ios;
   }
 
+  // A universal purchase has one product page for every platform, so sites set
+  // both URLs to the same value. Two badges pointing at the same page reads as
+  // a mistake, so the Mac one stands down and the iOS badge — "Download on the
+  // App Store" — covers the lot.
   function storeUrl(store, site) {
     const url = site[badge(store).urlKey];
-    return url && !url.startsWith("TODO") ? url : "";
+    if (!url || url.startsWith("TODO")) return "";
+    if (store === "mac" && url === site.appStoreUrl) return "";
+    return url;
   }
 
   function geometry(store, size) {

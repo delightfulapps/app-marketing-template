@@ -21,7 +21,9 @@ export default {
   // --- App Store -------------------------------------------------------
   // appStoreId powers the apple-itunes-app smart banner.
   // Leave either store URL empty to hide that badge — an iOS-only or
-  // Mac-only site needs no other change.
+  // Mac-only site needs no other change. A universal purchase should set both
+  // to the same URL: only the App Store badge renders, which is the correct
+  // one for a single product page.
   appStoreId: "TODO: 0000000000",
   appStoreUrl: "TODO: https://apps.apple.com/us/app/your-app/id0000000000",
   macAppStoreUrl: "TODO: https://apps.apple.com/us/app/your-app/id0000000000",
@@ -41,7 +43,10 @@ export default {
 
   // --- Structured data -------------------------------------------------
   // See https://schema.org/softwareApplicationCategory for the vocabulary.
+  // appCategory is the machine-readable token; appCategoryLabel is what a
+  // reader sees in the press kit fact sheet. They are rarely the same words.
   appCategory: "TODO: ProductivityApplication",
+  appCategoryLabel: "TODO: Productivity",
   operatingSystems: "TODO: iOS 18, iPadOS 18, macOS 15",
 
   // Shown in the press kit fact sheet and the SoftwareApplication offer.
