@@ -1,0 +1,22 @@
+---
+layout: base.webc
+eleventyNavigation:
+  key: Home
+  order: 1
+description: "TODO: the homepage meta description — one or two sentences, under 160 characters. Delete this line to fall back to site.description."
+hero: ""
+updated: 2026-08-01
+---
+
+<!--
+  The homepage is composition, not copy. Every string below comes from
+  src/_data/site.js or from markdown in src/content/ — reorder or delete these
+  lines freely, and each section hides itself when it has nothing to show.
+  Set `hero:` above to override the paragraph under the tagline.
+-->
+
+<app-hero></app-hero>
+<feature-list></feature-list>
+<download-cta></download-cta>
+<screenshot-gallery></screenshot-gallery>
+<faq-list></faq-list>

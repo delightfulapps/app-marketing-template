@@ -1,0 +1,18 @@
+<footer class="mt-auto border-t border-border">
+  <div
+    class="container-page flex flex-col gap-6 py-10 text-sm text-muted sm:flex-row sm:items-center sm:justify-between"
+  >
+    <p>
+      &copy; <span @text="new Date().getFullYear()"></span>
+      <span @text="$data.site.publisher"></span>
+    </p>
+
+    <nav aria-label="Footer" class="flex flex-wrap items-center gap-x-5 gap-y-2">
+      <a href="/support/" class="hover:text-fg">Support</a>
+      <a href="/press-kit/" class="hover:text-fg">Press kit</a>
+      <a href="/privacy/" class="hover:text-fg">Privacy</a>
+      <a href="/terms/" class="hover:text-fg">Terms</a>
+      <a :href="`mailto:${$data.site.supportEmail}`" class="hover:text-fg">Contact</a>
+    </nav>
+  </div>
+</footer>

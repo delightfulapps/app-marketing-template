@@ -1,0 +1,58 @@
+---
+layout: base.webc
+title: Press Kit
+description: "TODO: one sentence for journalists. Assets, screenshots and facts for writing about the app."
+ogImage: /assets/og/press-kit.png
+ogImageAlt: "TODO: describe the press kit social card."
+updated: 2026-08-01
+---
+
+<article class="section">
+  <div class="container-page">
+    <h1 class="text-3xl font-semibold sm:text-4xl">Press Kit</h1>
+
+    <div class="prose prose-page mt-6 max-w-2xl">
+      <p>
+        TODO: two or three sentences a journalist could quote or paraphrase.
+        What the app does, who it is for, and what makes it different.
+      </p>
+      <p>
+        Everything on this page may be used in articles and reviews without
+        asking. For anything else, or for an interview, email
+        <a :href="`mailto:${site.pressEmail}`" @text="site.pressEmail"></a>.
+      </p>
+    </div>
+
+    <h2 class="section-heading mt-14">Fact sheet</h2>
+    <div class="card mt-6 p-6">
+      <press-fact-sheet></press-fact-sheet>
+    </div>
+
+    <h2 class="section-heading mt-14">Brand assets</h2>
+    <ul class="mt-6 flex flex-wrap gap-4">
+      <li>
+        <a href="/assets/icon.png" download class="btn-secondary"
+          >App icon (1024px PNG)</a
+        >
+      </li>
+      <li>
+        <a href="/assets/press-kit.zip" download class="btn-secondary"
+          >Everything (ZIP)</a
+        >
+      </li>
+    </ul>
+
+    <h2 class="section-heading mt-14">Screenshots</h2>
+    <p class="mt-2 text-sm text-muted">
+      Full-resolution originals, free to use in coverage.
+    </p>
+
+    <div class="mt-8 space-y-12">
+      <screenshot-grid
+        webc:for="platform of Object.keys(screenshots)"
+        :@platform="platform"
+        downloads="true"
+      ></screenshot-grid>
+    </div>
+  </div>
+</article>

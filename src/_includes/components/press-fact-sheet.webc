@@ -1,0 +1,33 @@
+<script webc:setup>
+  // Pure functions — see the note in site-head.webc about webc:setup.
+  function facts(site) {
+    return [
+      ["App", site.name],
+      ["Publisher", site.publisher],
+      ["Category", site.appCategory],
+      ["Platforms", site.operatingSystems],
+      ["Pricing", site.pricingNote],
+      ["Website", site.url],
+      ["Press contact", site.pressEmail],
+    ];
+  }
+
+  function stores(site) {
+    return [
+      ["App Store", site.appStoreUrl],
+      ["Mac App Store", site.macAppStoreUrl],
+    ].filter(([, url]) => url && !url.startsWith("TODO"));
+  }
+</script>
+
+<dl class="grid gap-x-8 gap-y-3 sm:grid-cols-[10rem_1fr]">
+  <template webc:for="row of facts($data.site)" webc:nokeep>
+    <dt class="text-sm font-medium text-muted" @text="row[0]"></dt>
+    <dd @text="row[1]"></dd>
+  </template>
+
+  <template webc:for="store of stores($data.site)" webc:nokeep>
+    <dt class="text-sm font-medium text-muted" @text="store[0]"></dt>
+    <dd><a :href="store[1]" class="link break-all" @text="store[1]"></a></dd>
+  </template>
+</dl>

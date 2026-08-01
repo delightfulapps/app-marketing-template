@@ -1,0 +1,23 @@
+---
+layout: base.webc
+title: Pricing
+eleventyNavigation:
+  key: Pricing
+  order: 3
+description: "TODO: one sentence on how pricing works. Under 160 characters."
+ogImage: /assets/og/pricing.png
+ogImageAlt: "TODO: describe the pricing social card."
+updated: 2026-08-01
+---
+
+<section class="pb-4 pt-16 sm:pt-24">
+  <div class="container-page text-center">
+    <h1 class="text-3xl font-semibold sm:text-4xl">Pricing</h1>
+    <p class="mx-auto mt-4 max-w-xl text-muted" @text="site.pricingNote"></p>
+  </div>
+</section>
+
+<!-- Tiers come from src/content/pricing/ — one markdown file each. -->
+<pricing-table></pricing-table>
+
+<faq-list></faq-list>

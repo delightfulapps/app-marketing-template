@@ -1,0 +1,26 @@
+<!-- Cards come from src/content/features/ — one markdown file each, ordered by
+     the `order` value in their front matter. -->
+<section webc:if="$data.collections.features.length" class="section" id="features">
+  <div class="container-page">
+    <h2
+      class="section-heading"
+      @text="$data.featuresHeading || 'Everything you need'"
+    ></h2>
+
+    <ul class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <li webc:for="feature of $data.collections.features" class="card p-6">
+        <p
+          webc:if="feature.data.icon"
+          class="mb-3 text-2xl text-brand"
+          aria-hidden="true"
+          @text="feature.data.icon"
+        ></p>
+        <h3 class="font-semibold" @text="feature.data.title"></h3>
+        <div
+          class="prose prose-page prose-sm mt-2 text-muted"
+          @html="feature.content"
+        ></div>
+      </li>
+    </ul>
+  </div>
+</section>

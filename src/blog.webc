@@ -1,0 +1,42 @@
+---
+layout: base.webc
+title: Blog
+eleventyNavigation:
+  key: Blog
+  order: 4
+description: "TODO: what you write about here — release deep-dives, how-tos, company news."
+ogImage: /assets/og/blog.png
+ogImageAlt: "TODO: describe the blog social card."
+---
+
+<section class="section">
+  <div class="container-prose">
+    <h1 class="text-3xl font-semibold sm:text-4xl">Blog</h1>
+
+    <p webc:if="!collections.posts.length" class="mt-6 text-muted">
+      Nothing published yet.
+    </p>
+
+    <ul webc:if="collections.posts.length" class="mt-10 divide-y divide-border border-y border-border">
+      <li webc:for="post of collections.posts" class="py-5">
+        <a :href="post.url" class="group block">
+          <h2
+            class="font-semibold group-hover:text-brand"
+            @text="post.data.title"
+          ></h2>
+          <p class="mt-1 text-sm text-muted">
+            <time
+              :datetime="new Date(post.data.date).toISOString().slice(0, 10)"
+              @text="new Date(post.data.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })"
+            ></time>
+          </p>
+          <p
+            webc:if="post.data.description"
+            class="mt-2 text-muted"
+            @text="post.data.description"
+          ></p>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>

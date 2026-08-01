@@ -1,0 +1,24 @@
+---
+layout: base.webc
+title: Changelog
+eleventyNavigation:
+  key: Changelog
+  order: 5
+description: "TODO: one sentence — what's new in each release."
+ogType: article
+ogImage: /assets/og/changelog.png
+ogImageAlt: "TODO: describe the changelog social card."
+---
+
+<section class="section">
+  <div class="container-prose">
+    <h1 class="text-3xl font-semibold sm:text-4xl">Changelog</h1>
+    <p class="mt-3 text-sm text-muted">
+      <a href="/changelog.xml" class="link">Subscribe via Atom</a>
+    </p>
+
+    <div class="mt-12">
+      <changelog-list></changelog-list>
+    </div>
+  </div>
+</section>

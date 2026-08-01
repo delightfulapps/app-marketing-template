@@ -1,0 +1,97 @@
+<script webc:setup>
+  // IMPORTANT: `webc:setup` runs once per component for the whole build, not
+  // once per page — a `const` here would freeze the first page's values into
+  // every page. So it holds pure functions only, and everything page-specific
+  // is read from $data at the point of use. Same rule in every component here.
+  function brandTokens(site) {
+    return (
+      `:root{--brand:${site.themeColor};--bg:${site.backgroundColor}}` +
+      `@media(prefers-color-scheme:dark){:root{--bg:${site.backgroundColorDark}}}`
+    );
+  }
+</script>
+
+<template webc:nokeep>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+
+  <title @text="$data.seo.title"></title>
+  <meta name="description" :content="$data.seo.description" />
+  <link rel="canonical" :href="$data.seo.canonical" />
+  <meta webc:if="$data.seo.noindex" name="robots" content="noindex,follow" />
+
+  <meta property="og:type" :content="$data.seo.type" />
+  <meta property="og:site_name" :content="$data.site.name" />
+  <meta property="og:locale" :content="$data.site.locale" />
+  <meta property="og:title" :content="$data.seo.title" />
+  <meta property="og:description" :content="$data.seo.description" />
+  <meta property="og:url" :content="$data.seo.canonical" />
+  <meta property="og:image" :content="$data.seo.image" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" :content="$data.seo.imageAlt" />
+  <meta
+    webc:if="$data.updated"
+    property="og:updated_time"
+    :content="new Date($data.updated).toISOString()"
+  />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" :content="$data.seo.title" />
+  <meta name="twitter:description" :content="$data.seo.description" />
+  <meta name="twitter:image" :content="$data.seo.image" />
+  <meta name="twitter:image:alt" :content="$data.seo.imageAlt" />
+
+  <!-- Smart app banner. Suppressed until site.js carries a real App Store id. -->
+  <meta
+    webc:if="!$data.site.appStoreId.startsWith('TODO')"
+    name="apple-itunes-app"
+    :content="`app-id=${$data.site.appStoreId}`"
+  />
+
+  <meta
+    name="theme-color"
+    media="(prefers-color-scheme: light)"
+    :content="$data.site.backgroundColor"
+  />
+  <meta
+    name="theme-color"
+    media="(prefers-color-scheme: dark)"
+    :content="$data.site.backgroundColorDark"
+  />
+
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link
+    rel="icon"
+    href="/assets/icons/icon-192.png"
+    type="image/png"
+    sizes="192x192"
+  />
+  <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    :title="`${$data.site.name} blog`"
+    href="/blog.xml"
+  />
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    :title="`${$data.site.name} release notes`"
+    href="/changelog.xml"
+  />
+
+  <!-- webc:keep: WebC would otherwise pull this into its own asset bundle.
+       The stylesheet is built by Tailwind and served as a plain file. -->
+  <link rel="stylesheet" href="/assets/css/site.css" webc:keep />
+
+  <!-- Brand tokens straight from src/_data/site.js. Unlayered and after the
+       stylesheet, so these beat the fallbacks in tailwind.css. This is why no
+       brand colour is ever hardcoded in CSS. -->
+  <style webc:keep @html="brandTokens($data.site)"></style>
+
+  <json-ld webc:if="$data.page.url === '/'"></json-ld>
+</template>

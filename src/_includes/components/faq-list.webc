@@ -1,0 +1,39 @@
+<!-- Entries come from src/content/faq/ — the same source the FAQPage structured
+     data in json-ld.webc reads, so the two can never disagree. -->
+<section
+  webc:if="$data.collections.faq.length"
+  class="section border-t border-border"
+  id="faq"
+>
+  <div class="container-prose">
+    <h2 class="section-heading">Questions</h2>
+
+    <div class="mt-8 divide-y divide-border border-y border-border">
+      <details webc:for="entry of $data.collections.faq" class="group py-4">
+        <summary
+          class="flex cursor-pointer list-none items-center justify-between gap-4 font-medium marker:content-none"
+        >
+          <span @text="entry.data.title"></span>
+          <span
+            class="text-muted transition-transform group-open:rotate-45"
+            aria-hidden="true"
+            >+</span
+          >
+        </summary>
+        <div
+          class="prose prose-page prose-sm mt-3 text-muted"
+          @html="entry.content"
+        ></div>
+      </details>
+    </div>
+
+    <p class="mt-8 text-sm text-muted">
+      Still stuck?
+      <a
+        :href="`mailto:${$data.site.supportEmail}`"
+        class="link"
+        @text="$data.site.supportEmail"
+      ></a>
+    </p>
+  </div>
+</section>

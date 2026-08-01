@@ -1,0 +1,22 @@
+<template webc:nokeep>
+  <dialog
+    id="lightbox"
+    class="max-h-[90dvh] max-w-[90vw] rounded-card border border-border bg-surface p-2 backdrop:bg-black/70"
+  >
+    <form method="dialog" class="flex justify-end">
+      <button
+        class="rounded-full px-3 py-1 text-sm text-muted hover:text-fg"
+        aria-label="Close"
+      >
+        Close
+      </button>
+    </form>
+    <img
+      id="lightbox-image"
+      alt=""
+      class="max-h-[80dvh] w-auto max-w-full rounded-lg"
+      eleventy:ignore
+    />
+  </dialog>
+  <script src="/assets/js/lightbox.js" defer webc:keep></script>
+</template>

@@ -1,0 +1,230 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Templates live outside this file's directory, and .webc is not a format
+   Tailwind's auto-detection recognises, so point it at the source tree. */
+@source "../**/*.{webc,njk,md,html}";
+
+/* ---------------------------------------------------------------------------
+   Tokens.
+
+   Tailwind utilities resolve to CSS custom properties rather than literal
+   colours, so the palette can be swapped at runtime by the light/dark blocks
+   below — and so `--brand` and `--bg` can come from src/_data/site.js, which
+   site-head.webc emits as an inline <style> on every page. Nothing else in the
+   project should hardcode a brand colour.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "SF Pro Text", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", monospace;
+
+  --radius-card: 0.875rem;
+}
+
+/* Fallbacks. site-head.webc overrides --brand and --bg per site; everything
+   else is template chrome that stays the same from app to app. */
+:root {
+  color-scheme: light;
+  --brand: #1d4ed8;
+  --brand-fg: #ffffff;
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --fg: #17171a;
+  --muted: #5c5c66;
+  --border: color-mix(in oklab, var(--fg) 12%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #101014;
+    --surface: #17171d;
+    --fg: #f3f3f5;
+    --muted: #a2a2ae;
+    --border: color-mix(in oklab, var(--fg) 16%, transparent);
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.02em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Shared shorthands. Declared with @utility rather than a plain @layer rule so
+   they can be composed with @apply and so variants (hover:, sm:) work. */
+
+@utility container-page {
+  @apply mx-auto w-full max-w-5xl px-5 sm:px-8;
+}
+
+@utility container-prose {
+  @apply mx-auto w-full max-w-2xl px-5 sm:px-8;
+}
+
+@utility section {
+  @apply py-16 sm:py-24;
+}
+
+@utility section-heading {
+  @apply text-2xl font-semibold sm:text-3xl;
+}
+
+@utility card {
+  @apply rounded-card border border-border bg-surface;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-colors;
+}
+
+@utility btn-primary {
+  @apply btn bg-brand text-brand-fg hover:opacity-90;
+}
+
+@utility btn-secondary {
+  @apply btn border border-border bg-surface text-fg hover:bg-brand/5;
+}
+
+@utility link {
+  @apply text-brand underline decoration-brand/30 underline-offset-4 hover:decoration-brand;
+}
+
+/* Retints the typography plugin onto our tokens so prose follows the same
+   light/dark palette as everything else. Use alongside `prose`:
+   class="prose prose-page".
+
+   Deliberately unlayered: the plugin registers `.prose` (and its own
+   --tw-prose-* values) inside a layer, and unlayered rules beat every layer
+   regardless of source order. Inside @layer components these overrides lost,
+   which showed up as washed-out body text in dark mode. */
+.prose-page {
+  --tw-prose-body: var(--color-fg);
+  --tw-prose-headings: var(--color-fg);
+  --tw-prose-lead: var(--color-muted);
+  --tw-prose-links: var(--color-brand);
+  --tw-prose-bold: var(--color-fg);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-bullets: var(--color-border);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-quotes: var(--color-fg);
+  --tw-prose-quote-borders: var(--color-border);
+  --tw-prose-captions: var(--color-muted);
+  --tw-prose-code: var(--color-fg);
+  --tw-prose-pre-code: #e5e7eb;
+  --tw-prose-pre-bg: #16161c;
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border);
+}
+
+/* eleventy-plugin-syntaxhighlight emits Prism token markup but ships no theme,
+   so code blocks would render flat. These few rules cover the tokens that
+   actually appear in prose; the pre background is dark in both colour schemes,
+   which is what --tw-prose-pre-bg above already assumes. */
+.prose-page pre {
+  overflow-x: auto;
+}
+
+/* The typography plugin wraps inline code in literal backticks. Swap them for
+   a tinted chip, which reads better and matches the cards. */
+.prose-page code::before,
+.prose-page code::after {
+  content: none;
+}
+
+.prose-page :not(pre) > code {
+  background: color-mix(in oklab, var(--color-brand) 10%, transparent);
+  border-radius: 0.3rem;
+  padding: 0.15em 0.35em;
+  font-weight: 500;
+}
+
+.prose-page .token.comment,
+.prose-page .token.prolog,
+.prose-page .token.doctype,
+.prose-page .token.cdata {
+  color: #8b94a7;
+}
+
+.prose-page .token.keyword,
+.prose-page .token.rule,
+.prose-page .token.important,
+.prose-page .token.atrule {
+  color: #c792ea;
+}
+
+.prose-page .token.string,
+.prose-page .token.char,
+.prose-page .token.attr-value,
+.prose-page .token.regex {
+  color: #a5d6a7;
+}
+
+.prose-page .token.function,
+.prose-page .token.class-name,
+.prose-page .token.selector {
+  color: #82aaff;
+}
+
+.prose-page .token.number,
+.prose-page .token.boolean,
+.prose-page .token.constant,
+.prose-page .token.symbol {
+  color: #f78c6c;
+}
+
+.prose-page .token.property,
+.prose-page .token.tag,
+.prose-page .token.attr-name {
+  color: #ffcb6b;
+}
+
+.prose-page .token.operator,
+.prose-page .token.punctuation {
+  color: #b9c0cc;
+}

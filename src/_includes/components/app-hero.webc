@@ -1,0 +1,33 @@
+<section class="section border-b border-border">
+  <div class="container-page flex flex-col items-center text-center">
+    <img
+      src="/assets/icon.png"
+      alt=""
+      width="96"
+      height="96"
+      class="mb-8 rounded-[22%] shadow-lg shadow-brand/10"
+      eleventy:ignore
+    />
+
+    <h1
+      class="max-w-2xl text-4xl font-semibold sm:text-5xl"
+      @text="$data.site.name"
+    ></h1>
+
+    <p
+      class="mt-4 max-w-2xl text-xl text-muted sm:text-2xl"
+      @text="$data.site.tagline"
+    ></p>
+
+    <!-- Set `hero:` in the page front matter to override this paragraph; it
+         falls back to the shared site description. -->
+    <p
+      class="mt-6 max-w-xl text-balance text-muted"
+      @text="$data.hero || $data.site.description"
+    ></p>
+
+    <div class="mt-9">
+      <store-badges></store-badges>
+    </div>
+  </div>
+</section>

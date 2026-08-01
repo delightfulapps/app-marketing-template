@@ -1,0 +1,10 @@
+node_modules/
+_site/
+
+# Built by the Tailwind step in eleventy.config.js — never edit or commit.
+src/assets/css/site.css
+
+# Built by the eleventy.before hook from the icon and screenshots.
+src/assets/press-kit.zip
+
+.DS_Store

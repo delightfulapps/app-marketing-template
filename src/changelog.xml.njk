@@ -1,0 +1,24 @@
+---
+permalink: /changelog.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>{{ site.name }} release notes</title>
+  <subtitle>New in {{ site.name }}.</subtitle>
+  <link href="{{ "/changelog.xml" | siteUrl }}" rel="self"/>
+  <link href="{{ "/changelog/" | siteUrl }}"/>
+  <updated>{{ collections.releases[0].data.date | isoDate }}</updated>
+  <id>{{ "/changelog/" | siteUrl }}</id>
+  <author><name>{{ site.publisher }}</name></author>
+  {%- for release in collections.releases %}
+  {%- set anchor = "v" + (release.data.version | replace(".", "-")) %}
+  <entry>
+    <title>{{ site.name }} {{ release.data.version }}</title>
+    <link href="{{ ("/changelog/#" + anchor) | siteUrl }}"/>
+    <updated>{{ release.data.date | isoDate }}</updated>
+    <id>{{ ("/changelog/#" + anchor) | siteUrl }}</id>
+    <content type="html">{{ release.templateContent | escape }}</content>
+  </entry>
+  {%- endfor %}
+</feed>

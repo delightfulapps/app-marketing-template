@@ -1,0 +1,36 @@
+<script webc:setup>
+  // Portrait phone shots want a denser grid than landscape desktop and
+  // headset captures. Pure function — see the note in site-head.webc.
+  function columns(platform) {
+    return platform === "ios"
+      ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+      : "grid-cols-1 sm:grid-cols-2";
+  }
+</script>
+
+<!-- platform="ios" | "macos" | … ; downloads="true" adds an original-file link,
+     which is what the press kit wants and the homepage does not. -->
+<div webc:if="$data.screenshots[platform].items.length" webc:nokeep>
+  <h3
+    class="text-sm font-medium uppercase tracking-wide text-muted"
+    @text="$data.screenshots[platform].platform"
+  ></h3>
+
+  <ul class="mt-4 grid gap-4" :class="columns(platform)">
+    <li webc:for="shot of $data.screenshots[platform].items">
+      <figure>
+        <button
+          type="button"
+          class="screenshot-trigger block w-full overflow-hidden rounded-card border border-border bg-surface transition-transform hover:scale-[1.02]"
+          :data-full="shot.url"
+          :data-alt="shot.alt"
+        >
+          <img :src="shot.url" :alt="shot.alt" class="w-full" />
+        </button>
+        <figcaption webc:if="downloads === 'true'" class="mt-2 text-xs text-muted">
+          <a :href="shot.url" download class="link">Download original</a>
+        </figcaption>
+      </figure>
+    </li>
+  </ul>
+</div>

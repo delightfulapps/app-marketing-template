@@ -1,0 +1,9 @@
+---
+permalink: CNAME
+eleventyExcludeFromCollections: true
+# GitHub Pages requires this exact extensionless filename.
+eleventyAllowMissingExtension: true
+---
+{#- GitHub Pages custom domain, derived from site.url so it can never drift
+    from the canonical URLs. Delete this file if you deploy elsewhere. -#}
+{{ site.url | replace("https://", "") | replace("http://", "") | replace("/", "") }}
