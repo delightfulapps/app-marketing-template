@@ -57,5 +57,6 @@ export default {
   // Shown in the press kit fact sheet and the SoftwareApplication offer.
   price: "0",
   priceCurrency: "USD",
-  pricingNote: "TODO: Free download with an optional Pro subscription.",
+  pricingNote:
+    "TODO: Free download, with monthly and annual Pro subscriptions.",
 };

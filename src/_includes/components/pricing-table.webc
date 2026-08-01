@@ -24,19 +24,30 @@
           <span class="text-sm text-muted" @text="tier.data.period"></span>
         </p>
 
+        <!-- Optional. Where an annual tier states its saving against monthly. -->
+        <p
+          webc:if="tier.data.note"
+          class="mt-2 text-sm font-medium text-brand"
+          @text="tier.data.note"
+        ></p>
+
         <div
           class="prose prose-page prose-sm mt-5 flex-1 text-muted"
           @html="tier.content"
         ></div>
-
-        <a
-          webc:if="tier.data.cta"
-          :href="tier.data.ctaUrl || '/#download'"
-          class="mt-7"
-          :class="tier.data.featured ? 'btn-primary' : 'btn-secondary'"
-          @text="tier.data.cta"
-        ></a>
       </li>
     </ul>
+
+    <!-- One badge, not one per tier: every plan is the same App Store product,
+         so repeating the same link in each card would read as a mistake. Going
+         through store-badges rather than app-store-badge also keeps the
+         "set appStoreUrl" placeholder before the store URLs are filled in. -->
+    <div class="mt-12 flex flex-col items-center gap-4">
+      <store-badges></store-badges>
+      <p class="max-w-md text-center text-sm text-muted">
+        Every plan is the same free download — subscriptions are managed in the
+        App Store.
+      </p>
+    </div>
   </div>
 </section>
