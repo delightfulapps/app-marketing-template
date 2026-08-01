@@ -41,7 +41,21 @@ npm run serve
 
 Content files are one markdown file per item. Add a feature by adding a file;
 reorder by changing `order` in its front matter; remove a section entirely by
-deleting its files — each component hides itself when its collection is empty.
+deleting its files — each homepage section hides itself when its collection is
+empty.
+
+### Optional sections
+
+The blog and the changelog disappear completely when they have no content, so
+neither ships as an empty shell. Delete everything in `src/blog/` and there is no
+`/blog/` page, no nav link, no `/blog.xml`, no sitemap entry and no feed link in
+`<head>`; the same goes for `src/content/releases/` and the changelog. Add a
+markdown file back and the whole section returns. [src/_data/sections.js](src/_data/sections.js)
+decides this by counting files on disk.
+
+One caveat: that decision happens when the config loads, so **restart
+`npm run serve` after adding the first post or release** — a live rebuild alone
+will not bring the section back.
 
 ## Assets to replace
 

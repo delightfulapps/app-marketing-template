@@ -17,10 +17,8 @@
 </script>
 
 <div>
-  <p webc:if="!$data.collections.releases.length" class="text-muted">
-    No releases yet.
-  </p>
-
+  <!-- No empty state needed: with no files in src/content/releases/ the
+       changelog page is left out of the build. See src/_data/sections.js. -->
   <ol class="space-y-12">
     <li
       webc:for="release of $data.collections.releases"

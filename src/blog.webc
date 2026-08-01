@@ -13,11 +13,9 @@ ogImageAlt: "TODO: describe the blog social card."
   <div class="container-prose">
     <h1 class="text-3xl font-semibold sm:text-4xl">Blog</h1>
 
-    <p webc:if="!collections.posts.length" class="mt-6 text-muted">
-      Nothing published yet.
-    </p>
-
-    <ul webc:if="collections.posts.length" class="mt-10 divide-y divide-border border-y border-border">
+    <!-- No empty state needed: with no posts in src/blog/ this page is left out
+         of the build entirely. See src/_data/sections.js. -->
+    <ul class="mt-10 divide-y divide-border border-y border-border">
       <li webc:for="post of collections.posts" class="py-5">
         <a :href="post.url" class="group block">
           <h2

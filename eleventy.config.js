@@ -8,6 +8,7 @@ import { feedPlugin } from "@11ty/eleventy-plugin-rss";
 import syntaxHighlightPlugin from "@11ty/eleventy-plugin-syntaxhighlight";
 import webcPlugin from "@11ty/eleventy-plugin-webc";
 
+import sections from "./src/_data/sections.js";
 import site from "./src/_data/site.js";
 
 // The input lives outside src/assets/ so passthrough copy does not ship the
@@ -40,22 +41,38 @@ export default function (eleventyConfig) {
     defaultAttributes: { loading: "lazy", decoding: "async" },
   });
 
-  eleventyConfig.addPlugin(feedPlugin, {
-    type: "atom",
-    outputPath: "/blog.xml",
-    collection: { name: "posts", limit: 20 },
-    metadata: {
-      language: "en",
-      title: `${site.name} blog`,
-      subtitle: site.description,
-      base: site.url,
-      author: { name: site.publisher },
-    },
-  });
+  if (sections.blog) {
+    eleventyConfig.addPlugin(feedPlugin, {
+      type: "atom",
+      outputPath: "/blog.xml",
+      collection: { name: "posts", limit: 20 },
+      metadata: {
+        language: "en",
+        title: `${site.name} blog`,
+        subtitle: site.description,
+        base: site.url,
+        author: { name: site.publisher },
+      },
+    });
+  }
 
   // The changelog feed is hand-written in src/changelog.xml.njk instead: its
   // entries are anchors on /changelog/, not pages, so feedPlugin has no URL to
   // link them to.
+
+  // --- Optional sections -----------------------------------------------
+
+  // Delete every post, or every release, and the section stops existing:
+  // ignoring the templates takes the page out of the build, which takes it out
+  // of collections, which takes it out of the nav and the sitemap in turn.
+  // Restore it by adding a markdown file back.
+  if (!sections.blog) {
+    eleventyConfig.ignores.add("src/blog.webc");
+  }
+  if (!sections.changelog) {
+    eleventyConfig.ignores.add("src/changelog.webc");
+    eleventyConfig.ignores.add("src/changelog.xml.njk");
+  }
 
   // --- Assets ----------------------------------------------------------
 
@@ -145,8 +162,10 @@ export default function (eleventyConfig) {
   // through a nested `webc:type="11ty"` block. Building the tree as a
   // collection instead means components read plain data — no escape hatch.
   // Pages opt in with front matter: eleventyNavigation: { key, order, parent }
+  // Filtering on `url` keeps entries for pages that are never written (an
+  // ignored template, or permalink: false) out of the header.
   eleventyConfig.addCollection("nav", (api) =>
-    findNavigationEntries(api.getAll()),
+    findNavigationEntries(api.getAll().filter((item) => item.url)),
   );
 
   eleventyConfig.addCollection("sitemapPages", (api) =>
