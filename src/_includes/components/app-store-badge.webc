@@ -2,32 +2,66 @@
   // Pure helpers only — see the note in site-head.webc about webc:setup being
   // evaluated once per build. Two badges render on the same page, so nothing
   // instance-specific may be cached here either.
+
+  // Apple's official artwork, straight from
+  // https://toolbox.marketingtools.apple.com. The two badges are NOT the same
+  // shape — the Mac wordmark is longer — so width is derived per store from the
+  // artwork's own viewBox rather than one shared ratio.
+  const BADGES = {
+    ios: {
+      file: "appstore-ios",
+      ratio: 119.66407 / 40,
+      label: "Download on the App Store",
+      urlKey: "appStoreUrl",
+    },
+    mac: {
+      file: "appstore-mac",
+      ratio: 156.10054 / 40,
+      label: "Download on the Mac App Store",
+      urlKey: "macAppStoreUrl",
+    },
+  };
+
+  // Apple's marketing guidelines set a 40px floor on badge height, so neither
+  // size may go below it.
+  const HEIGHTS = { lg: 56, md: 44 };
+
+  function badge(store) {
+    return BADGES[store] ?? BADGES.ios;
+  }
+
   function storeUrl(store, site) {
-    const url = store === "mac" ? site.macAppStoreUrl : site.appStoreUrl;
+    const url = site[badge(store).urlKey];
     return url && !url.startsWith("TODO") ? url : "";
   }
 
-  function storeLabel(store) {
-    return store === "mac"
-      ? "Download on the Mac App Store"
-      : "Download on the App Store";
+  function geometry(store, size) {
+    const height = HEIGHTS[size] ?? HEIGHTS.md;
+    return { height, width: Math.round(height * badge(store).ratio) };
   }
 </script>
 
-<!-- store="ios" | "mac", size="lg" for the download section. Renders nothing
-     when site.js has no real URL for that store, so an iOS-only or Mac-only
-     site needs no template change. -->
+<!-- store="ios" | "mac", size="lg" | "md". Renders nothing when site.js has no
+     real URL for that store, so an iOS-only or Mac-only site needs no template
+     change. The black badge is Apple's default; the white one is swapped in for
+     dark mode, which is the pairing Apple's guidelines call for. -->
 <a
   webc:if="storeUrl(store, $data.site)"
   :href="storeUrl(store, $data.site)"
-  :aria-label="storeLabel(store)"
+  :aria-label="badge(store).label"
   class="inline-block transition-opacity hover:opacity-85"
 >
-  <img
-    :src="store === 'mac' ? '/assets/appstore-mac.svg' : '/assets/appstore-ios.svg'"
-    :alt="storeLabel(store)"
-    :height="size === 'lg' ? 56 : 44"
-    :width="size === 'lg' ? 166 : 130"
-    eleventy:ignore
-  />
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      :srcset="`/assets/${badge(store).file}-white.svg`"
+    />
+    <img
+      :src="`/assets/${badge(store).file}-black.svg`"
+      :alt="badge(store).label"
+      :width="geometry(store, size).width"
+      :height="geometry(store, size).height"
+      eleventy:ignore
+    />
+  </picture>
 </a>

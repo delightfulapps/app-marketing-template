@@ -49,10 +49,7 @@ deleting its files — each component hides itself when its collection is empty.
    `npm run icons && npm run og` to regenerate the favicon set and the social
    cards. Both need local tools (`brew install imagemagick librsvg`) and are
    deliberately not part of `npm run build`; commit their output.
-2. `src/assets/appstore-ios.svg` and `appstore-mac.svg` — the placeholders are
-   marked TODO. Use Apple's official badge artwork, which is the only badge
-   Apple permits: <https://developer.apple.com/app-store/marketing/guidelines/>
-3. `src/assets/screenshots/{ios,macos,visionos}/` — drop numbered PNGs in and
+2. `src/assets/screenshots/{ios,macos,visionos}/` — drop numbered PNGs in and
    they appear in the homepage gallery and the press kit with no code change.
    The filename becomes the alt text, so name them descriptively:
    `02_app_details.png` → "… on iOS — app details".
@@ -87,6 +84,13 @@ deleting its files — each component hides itself when its collection is empty.
   every title, canonical URL and card tag follows.
 - **The custom domain comes from `site.url`** via `src/CNAME.njk`, so the deploy
   workflow has nothing to keep in sync. Delete that file if you deploy elsewhere.
+- **The store badges are Apple's official artwork**, fetched from
+  [Apple Marketing Tools](https://toolbox.marketingtools.apple.com) and committed
+  as `src/assets/appstore-{ios,mac}-{black,white}.svg`. Black is served to light
+  mode and white to dark via `<picture>`. Do not redraw or restyle them — Apple's
+  [guidelines](https://developer.apple.com/app-store/marketing/guidelines/)
+  require the badge as supplied, at 40px height or more, with clear space around
+  it. A badge only appears once its store URL is set in `site.js`.
 
 ## Deploying
 
