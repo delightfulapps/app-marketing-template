@@ -1,5 +1,6 @@
 ---
 layout: page.webc
+schemaKind: legal
 title: Terms of Service
 description: "TODO: one sentence summary of the terms covering use of the app."
 ogImage: /assets/og/legal.png

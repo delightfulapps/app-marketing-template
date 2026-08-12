@@ -9,9 +9,10 @@
     "serve": "eleventy --serve --quiet",
     "clean": "rm -rf _site src/assets/css/site.css",
     "setup": "node tools/setup.mjs",
-    "check": "node tools/check-todos.mjs && node tools/check-og.mjs",
+    "check": "node tools/check-todos.mjs && node tools/check-og.mjs && node tools/check-ai.mjs",
     "check:todos": "node tools/check-todos.mjs",
     "check:og": "node tools/check-og.mjs",
+    "check:ai": "node tools/check-ai.mjs",
     "icons": "node tools/generate-icons.mjs",
     "og": "node tools/generate-og.mjs"
   },
