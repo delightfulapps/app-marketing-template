@@ -16,6 +16,11 @@ concurrency:
 
 jobs:
   build:
+    # Skipped on the template repository itself: it has no site to publish and
+    # every placeholder is still in place, so the run could only ever fail.
+    # `deploy` needs this job, so skipping here skips the whole workflow.
+    # See .github/workflows/check.yml for why this is keyed on is_template.
+    if: ${{ !github.event.repository.is_template }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

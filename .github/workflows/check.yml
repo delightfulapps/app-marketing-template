@@ -1,0 +1,51 @@
+name: Check
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request makes the run in progress irrelevant.
+# (The deploy workflow deliberately does the opposite — a deploy in flight is
+# never worth cancelling.)
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # Skipped on the template repository itself, where every placeholder is
+    # still in place and check:todos is *supposed* to fail. Keyed on GitHub's
+    # own "is a template" flag rather than on a hardcoded repository name, so a
+    # site made from the template gets the checks with no edit, and a fork kept
+    # as somebody else's template skips them for the same reason this one does.
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Read from .tool-versions so CI and local development can never
+          # disagree about the Node version.
+          node-version-file: .tool-versions
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+      # One step each rather than `npm run check`, so a failure names itself in
+      # the job summary instead of hiding behind a single red cross.
+
+      # Fails while any TODO: placeholder is still in the source.
+      - run: npm run check:todos
+
+      # Validates the social-card metadata against the built output.
+      - run: npm run check:og
+
+      # Validates what machines read: the JSON-LD on every page, /llms.txt, the
+      # markdown mirrors, and the AI-crawler policy in robots.txt.
+      - run: npm run check:ai
