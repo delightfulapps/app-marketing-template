@@ -206,15 +206,28 @@ still carries every page's content.
   `macAppStoreUrl` to the same URL and only the App Store badge renders, which
   is the correct one for a single listing.
 
-## Deploying
+## CI and deploying
 
-`.github/workflows/deploy.yml` builds and publishes to GitHub Pages on every
-push to `main`, running all three checks first. Enable Pages for the repository
-with source set to GitHub Actions, and point your domain's DNS at GitHub.
+Two workflows, both running the same three checks:
 
-Expect the first run to fail at `check:todos` — that is the guard working, not a
-broken workflow. It goes green once the placeholders are replaced. Drop that
-step from the workflow if you would rather deploy a half-filled site.
+| Workflow | Runs on | Does |
+| --- | --- | --- |
+| `.github/workflows/check.yml` | pull requests to `main` | Builds, then `check:todos`, `check:og`, `check:ai` as separate steps so a failure names itself |
+| `.github/workflows/deploy.yml` | pushes to `main` | The same checks, then publishes `_site` to GitHub Pages |
+
+Enable Pages for the repository with source set to GitHub Actions, and point
+your domain's DNS at GitHub.
+
+Both are skipped on a repository that is itself marked as a GitHub template,
+where every placeholder is still in place and `check:todos` is *supposed* to
+fail. That is keyed on GitHub's own `is_template` flag rather than a hardcoded
+repository name, so a site made from this template gets full CI with no edit to
+either file.
+
+On your own site, expect the first run to fail at `check:todos` — that is the
+guard working, not a broken workflow. It goes green once the placeholders are
+replaced. Drop that step from both workflows if you would rather ship a
+half-filled site.
 
 `check:ai` fails on a fresh clone for the same reason and needs no separate
 explanation: the structured data drops placeholder values rather than emitting
