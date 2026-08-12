@@ -222,7 +222,16 @@ Both are skipped on a repository that is itself marked as a GitHub template,
 where every placeholder is still in place and `check:todos` is *supposed* to
 fail. That is keyed on GitHub's own `is_template` flag rather than a hardcoded
 repository name, so a site made from this template gets full CI with no edit to
-either file.
+either file. A pull request on a template repository still gets a `smoke` job —
+the build and `check:og`, the two things that pass while the placeholders are in
+place — so a dependency bump is never merged on no signal at all.
+
+`.github/dependabot.yml` opens grouped pull requests weekly for the npm
+toolchain (Eleventy and Tailwind as separate groups, so a breakage is cheap to
+bisect) and for the workflow actions. Minor and patch updates are grouped;
+majors arrive on their own, which is the pull request worth reading rather than
+merging on a green tick. Neither the Node version in `.tool-versions` nor the
+App Store badge SVGs are covered — those are checked by hand.
 
 On your own site, expect the first run to fail at `check:todos` — that is the
 guard working, not a broken workflow. It goes green once the placeholders are

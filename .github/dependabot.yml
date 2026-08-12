@@ -1,0 +1,55 @@
+# Keeps the build toolchain and the workflow actions current.
+#
+# Everything this project depends on is a devDependency — the built site ships
+# no runtime packages at all — so an update can only ever break the build, never
+# the deployed site. That is why these are grouped rather than trickled out one
+# PR at a time: the pull-request workflow either goes green or it does not.
+#
+# Not covered here, and worth checking by hand now and then: the Node version in
+# .tool-versions (which CI reads), and the App Store badge SVGs in
+# src/assets/, which come from Apple Marketing Tools rather than from a package.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "[deps]"
+    groups:
+      # Grouped by family, not all-in-one: an Eleventy bump and a Tailwind bump
+      # landing in the same PR makes a breakage twice as expensive to bisect.
+      eleventy:
+        patterns:
+          - "@11ty/*"
+        update-types:
+          - minor
+          - patch
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+        update-types:
+          - minor
+          - patch
+    # Both groups are restricted to minor and patch on purpose. A major — an
+    # Eleventy 3 to 4, or a Tailwind 4 to 5 — then arrives as its own pull
+    # request, which is the one you actually want to read rather than merge on
+    # a green tick.
+
+  - package-ecosystem: github-actions
+    directory: / # Dependabot reads .github/workflows/ from the repository root.
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "[deps]"
+    groups:
+      # No update-types restriction here: these are pinned to a major tag
+      # (actions/checkout@v4), so a major bump is the only kind of update there
+      # is. They are all first-party GitHub actions and move together.
+      actions:
+        patterns:
+          - "*"
