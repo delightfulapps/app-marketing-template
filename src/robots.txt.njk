@@ -2,7 +2,79 @@
 permalink: /robots.txt
 eleventyExcludeFromCollections: true
 ---
+{#
+  Which AI crawlers get in is one knob: `aiCrawlers` in src/_data/site.js.
+
+  The two buckets below are not the same kind of thing, which is the part
+  everyone gets wrong:
+
+  TRAINING bots harvest pages into a dataset. Blocking them keeps the site out
+  of a future model's weights. It has no effect on whether the site can be
+  cited today.
+
+  RETRIEVAL bots fetch a page *now*, because someone just asked a question it
+  might answer. Blocking them is what makes a site invisible in AI answers.
+
+  So "search-only" is the interesting middle: citable, not trainable.
+
+  Two entries are control tokens rather than crawlers. Google-Extended and
+  Applebot-Extended are not user agents that ever request a page — they are
+  opt-out signals read by Gemini and Apple Intelligence. Disallowing them costs
+  nothing in Google Search or Spotlight, which is why they sit in the training
+  bucket rather than being a separate decision.
+
+  And Applebot without the suffix is a plain search crawler. It stays allowed
+  under every setting, including "none", or the site drops out of Siri and
+  Spotlight along with the AI answers.
+#}
+{%- set training = [
+  "GPTBot", "ClaudeBot", "anthropic-ai", "Claude-Web", "Google-Extended",
+  "Applebot-Extended", "CCBot", "Bytespider", "Meta-ExternalAgent",
+  "FacebookBot", "cohere-ai", "cohere-training-data-crawler", "Amazonbot",
+  "Diffbot", "Timpibot", "omgili", "omgilibot", "Webzio-Extended",
+  "ImagesiftBot", "AI2Bot", "Ai2Bot-Dolma", "YouBot", "PanguBot",
+  "VelenPublicWebCrawler", "Scrapy", "peer39_crawler", "Meltwater", "Seekr"
+] -%}
+{%- set retrieval = [
+  "OAI-SearchBot", "ChatGPT-User", "Claude-SearchBot", "Claude-User",
+  "PerplexityBot", "Perplexity-User", "DuckAssistBot", "MistralAI-User",
+  "Meta-ExternalFetcher"
+] -%}
 User-agent: *
 Allow: /
+
+# Classic search. Never affected by the aiCrawlers setting — Applebot here is
+# the Siri and Spotlight crawler, not the Apple Intelligence opt-out token.
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Applebot
+User-agent: DuckDuckBot
+Allow: /
+{% if site.aiCrawlers == "all" %}
+# aiCrawlers: "all" — every AI crawler is welcome, listed by name so that
+# changing your mind is a diff you can read rather than a silent default.
+{% for bot in retrieval %}User-agent: {{ bot }}
+{% endfor %}Allow: /
+
+{% for bot in training %}User-agent: {{ bot }}
+{% endfor %}Allow: /
+{% elif site.aiCrawlers == "search-only" %}
+# aiCrawlers: "search-only" — citable, not trainable.
+{% for bot in retrieval %}User-agent: {{ bot }}
+{% endfor %}Allow: /
+
+{% for bot in training %}User-agent: {{ bot }}
+{% endfor %}Disallow: /
+{% else %}
+# aiCrawlers: "none" — no AI crawler, retrieval or training. The site will not
+# appear in AI answers. Classic search above is unaffected.
+{% for bot in retrieval %}User-agent: {{ bot }}
+{% endfor %}{% for bot in training %}User-agent: {{ bot }}
+{% endfor %}Disallow: /
+{% endif %}
+# A structured summary of this site, written for language models:
+#   {{ "/llms.txt" | siteUrl }}
+#   {{ "/llms-full.txt" | siteUrl }}
+#   {{ "/for-llms/" | siteUrl }}
 
 Sitemap: {{ "/sitemap.xml" | siteUrl }}

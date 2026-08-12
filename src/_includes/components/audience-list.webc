@@ -1,0 +1,18 @@
+<script webc:setup>
+  // Pure functions — see the note in site-head.webc about webc:setup.
+  function entries(collections, kind) {
+    return (collections?.audience ?? []).filter(
+      (item) => item.data.kind === kind,
+    );
+  }
+</script>
+
+<!-- Nothing to say about this kind: render nothing rather than an empty heading. -->
+<template webc:if="entries($data.collections, kind).length" webc:nokeep>
+  <div class="mt-6 space-y-6">
+    <div webc:for="item of entries($data.collections, kind)">
+      <h3 class="font-semibold" @text="item.data.title"></h3>
+      <div class="prose prose-page mt-2" @html="item.templateContent"></div>
+    </div>
+  </div>
+</template>

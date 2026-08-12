@@ -142,7 +142,7 @@ export default function (eleventyConfig) {
 
   const byOrder = (a, b) => (a.data.order ?? 0) - (b.data.order ?? 0);
 
-  for (const name of ["features", "faq", "pricing"]) {
+  for (const name of ["features", "faq", "pricing", "audience"]) {
     eleventyConfig.addCollection(name, (api) =>
       api.getFilteredByTag(name).sort(byOrder),
     );

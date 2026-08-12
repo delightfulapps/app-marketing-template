@@ -14,6 +14,7 @@
 import { readFileSync, existsSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+import sections from "../src/_data/sections.js";
 import site from "../src/_data/site.js";
 
 const SITE = "_site";
@@ -166,23 +167,42 @@ if (!existsSync(SITE)) {
   process.exit(1);
 }
 
-// Every directory holding an index.html, plus the root page. Recurses one level
-// so nested output like /blog/<post>/ is covered too.
-function htmlPages(dir = "", depth = 2) {
+// Every directory holding an index.html, plus the root page. Recursion is
+// unbounded rather than depth-capped: a route nested one level deeper than
+// anyone expected must not be able to escape the check by being quiet about it.
+function htmlPages(dir = "") {
   const pages = [];
   if (existsSync(join(SITE, dir, "index.html"))) {
     pages.push(join(dir, "index.html"));
   }
-  if (depth === 0) return pages;
   for (const entry of readdirSync(join(SITE, dir), { withFileTypes: true })) {
     if (!entry.isDirectory() || entry.name === "assets") continue;
-    pages.push(...htmlPages(join(dir, entry.name), depth - 1));
+    pages.push(...htmlPages(join(dir, entry.name)));
   }
   return pages;
 }
 
 const pages = htmlPages();
 for (const page of pages) checkPage(page);
+
+// A template dropped from the build is silent — a .webc permalink ending in "/"
+// does it, and so does a typo in a filename. Counting pages would not notice;
+// naming them does. The two optional sections are asserted only when they have
+// content, which is the same rule sections.js applies.
+const expected = [
+  "index.html",
+  join("pricing", "index.html"),
+  join("support", "index.html"),
+  join("privacy", "index.html"),
+  join("terms", "index.html"),
+  join("press-kit", "index.html"),
+  join("for-llms", "index.html"),
+  ...(sections.blog ? [join("blog", "index.html")] : []),
+  ...(sections.changelog ? [join("changelog", "index.html")] : []),
+];
+for (const page of expected) {
+  if (!pages.includes(page)) fail(page, "expected route was never written");
+}
 
 console.log(
   `\n${failures === 0 ? "PASS" : `FAIL — ${failures} issue(s)`}` +

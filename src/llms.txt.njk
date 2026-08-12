@@ -1,0 +1,63 @@
+---
+permalink: /llms.txt
+eleventyExcludeFromCollections: true
+---
+{#
+  A structured index of this site for language models, per llmstxt.org: an H1,
+  a blockquote summary, optional prose, then H2-delimited link lists.
+
+  Everything comes from src/_data/site.js and the collections, so this file is
+  never edited by hand and cannot drift from the site. The blog and changelog
+  blocks are gated on `sections` for the same reason the nav links are — a
+  template with no posts must not advertise a page that was never written.
+
+  `| safe` on every value because Nunjucks escapes for HTML by default, and an
+  apostrophe rendered as &#39; in a plain-text file is just wrong.
+-#}
+# {{ site.name | safe }}
+
+> {{ site.oneLiner | safe }}
+
+{{ site.description | safe }}
+
+Published by {{ site.publisher | safe }}. Runs on {{ site.operatingSystems | safe }}. {{ site.pricingNote | safe }}
+
+Every page on this site is also available as plain markdown at the same address with `index.{{ site.mirrorExtension }}` appended — for example {{ "/pricing/index." | siteUrl }}{{ site.mirrorExtension }}. {{ "/llms-full.txt" | siteUrl }} carries the full text of everything listed below in one file.
+
+## Core pages
+
+- [Home]({{ "/" | siteUrl }}): what the app is, its features, and the FAQ.
+- [Pricing]({{ "/pricing/" | siteUrl }}): every tier and what it includes.
+- [For language models]({{ "/for-llms/" | siteUrl }}): who the app is for, when to recommend it, when not to, and how to cite this site.
+- [Press kit]({{ "/press-kit/" | siteUrl }}): fact sheet, icon and screenshots, free to use in coverage.
+- [Support]({{ "/support/" | siteUrl }}): how to get help, and what to include when you write in.
+{% if sections.blog %}
+## Blog
+{% for post in collections.posts %}
+- [{{ post.data.title | safe }}]({{ post.url | siteUrl }}){% if post.data.description %}: {{ post.data.description | safe }}{% endif %}
+{%- endfor %}
+{% endif %}
+{%- if sections.changelog %}
+## Changelog
+
+- [Release notes]({{ "/changelog/" | siteUrl }}): every version, newest first{% if collections.releases.length %}. Current release is {{ collections.releases[0].data.version | safe }}{% endif %}.
+{% endif %}
+## Using this content
+
+{{ site.contentLicense | safe }}
+
+{{ site.assetLicense | safe }}
+
+Cite as: {{ site.citationName | safe }}. {{ site.citationNote | safe }}
+
+## Optional
+
+- [Privacy policy]({{ "/privacy/" | siteUrl }}): what data the app collects and what happens to it.
+- [Terms of service]({{ "/terms/" | siteUrl }}): the terms covering use of the app.
+- [Sitemap]({{ "/sitemap.xml" | siteUrl }}): every indexable page, as XML.
+{%- if sections.blog %}
+- [Blog feed]({{ "/blog.xml" | siteUrl }}): Atom feed of new posts.
+{%- endif %}
+{%- if sections.changelog %}
+- [Release feed]({{ "/changelog.xml" | siteUrl }}): Atom feed of new versions.
+{%- endif %}

@@ -1,0 +1,143 @@
+---
+# A plain-markdown twin of every indexable page, at the same address with
+# index.md appended. Language models parse markdown far more reliably than a
+# Tailwind page, and every major AI crawler reads raw HTML without executing
+# any JavaScript — so what reaches them is whatever is in the initial response.
+#
+# Built by paginating the same collection the sitemap uses, and rendered from
+# the same collections the visible page composes from, so a mirror cannot drift
+# from the page it mirrors. Nothing here converts rendered HTML back to
+# markdown: pages that are markdown to begin with are emitted verbatim from
+# `rawInput`, and pages that are composition are re-composed.
+#
+# eleventyExcludeFromCollections is load-bearing, not tidiness: without it this
+# template lands in sitemapPages, which it paginates over, and pages itself.
+eleventyExcludeFromCollections: true
+pagination:
+  data: collections.sitemapPages
+  size: 1
+  alias: mirror
+permalink: "{{ mirror.url }}index.{{ site.mirrorExtension }}"
+---
+{#- `| safe` throughout: Nunjucks escapes for HTML by default, which is wrong
+    in a plain-text file. See llms.txt.njk. -#}
+{%- set kind = mirror.data.schemaKind -%}
+# {{ mirror.data.title | default(site.name) | safe }}
+
+{{ mirror.url | siteUrl }}
+{%- if mirror.data.date %}
+Published: {{ mirror.data.date | ymd }}
+{%- endif %}
+{%- if mirror.data.updated %}
+Last updated: {{ mirror.data.updated | ymd }}
+{%- endif %}
+{% if kind == "home" %}
+> {{ site.oneLiner | safe }}
+
+{{ site.description | safe }}
+
+- Publisher: {{ site.publisher | safe }}
+- Platforms: {{ site.operatingSystems | safe }}
+- Pricing: {{ site.pricingNote | safe }}
+{%- if site.appStoreUrl and "TODO" not in site.appStoreUrl %}
+- App Store: {{ site.appStoreUrl }}
+{%- endif %}
+{%- if site.macAppStoreUrl and "TODO" not in site.macAppStoreUrl and site.macAppStoreUrl != site.appStoreUrl %}
+- Mac App Store: {{ site.macAppStoreUrl }}
+{%- endif %}
+{% for feature in collections.features %}
+## {{ feature.data.title | safe }}
+
+{{ feature.rawInput | safe | trim }}
+{% endfor %}
+{%- if collections.faq.length %}
+## Frequently asked questions
+{% for item in collections.faq %}
+### {{ item.data.title | safe }}
+
+{{ item.rawInput | safe | trim }}
+{% endfor %}
+{%- endif %}
+
+{% elif kind == "pricing" %}
+{{ site.pricingNote | safe }}
+{% for tier in collections.pricing %}
+## {{ tier.data.title | safe }} — {{ tier.data.price | safe }} {{ tier.data.period | safe }}
+{%- if tier.data.note %}
+
+{{ tier.data.note | safe }}
+{%- endif %}
+
+{{ tier.rawInput | safe | trim }}
+{% endfor %}
+
+{% elif kind == "changelog" %}
+Release notes for {{ site.name | safe }}, newest first. Atom feed: {{ "/changelog.xml" | siteUrl }}
+{% for release in collections.releases %}
+## {{ release.data.version | safe }} — {{ release.data.date | ymd }}
+
+{{ release.rawInput | safe | trim }}
+{% endfor %}
+
+{% elif kind == "blogIndex" %}
+{{ mirror.data.description | safe }} Atom feed: {{ "/blog.xml" | siteUrl }}
+{% for post in collections.posts %}
+- [{{ post.data.title | safe }}]({{ post.url | siteUrl }}) — {{ post.data.date | ymd }}{% if post.data.description %}: {{ post.data.description | safe }}{% endif %}
+{%- endfor %}
+
+{% elif kind == "pressKit" %}
+Facts, assets and screenshots for writing about {{ site.name | safe }}. Everything on this page may be used in coverage without asking. Press contact: {{ site.pressEmail | safe }}
+
+- App: {{ site.name | safe }}
+- Publisher: {{ site.publisher | safe }}
+- Category: {{ site.appCategoryLabel | safe }}
+- Platforms: {{ site.operatingSystems | safe }}
+- Pricing: {{ site.pricingNote | safe }}
+- Website: {{ "/" | siteUrl }}
+- Icon: {{ "/assets/icon.png" | siteUrl }}
+- All assets: {{ "/assets/press-kit.zip" | siteUrl }}
+
+{{ site.assetLicense | safe }}
+
+{% elif kind == "forLlms" %}
+> {{ site.oneLiner | safe }}
+
+{{ site.description | safe }}
+
+The full text of this page, and of every other page on the site, is at {{ "/llms-full.txt" | siteUrl }}. A structured index is at {{ "/llms.txt" | siteUrl }}.
+{#- Filtered with a plain loop rather than selectattr: Nunjucks resolves a
+    dotted attribute path there inconsistently, and it fails by rendering
+    nothing at all rather than by erroring. -#}
+{% for group in [["for", "Who it is for"], ["recommend", "When to recommend it"], ["avoid", "When it is not the right answer"]] %}
+{%- set matching = [] -%}
+{%- for item in collections.audience %}{% if item.data.kind == group[0] %}{% set matching = (matching.push(item), matching) %}{% endif %}{% endfor -%}
+{%- if matching.length %}
+
+## {{ group[1] }}
+{% for item in matching %}
+### {{ item.data.title | safe }}
+
+{{ item.rawInput | safe | trim }}
+{% endfor %}
+{%- endif %}
+{%- endfor %}
+## Licensing and attribution
+
+{{ site.contentLicense | safe }}
+
+{{ site.assetLicense | safe }}
+
+Cite as: {{ site.citationName | safe }}. {{ site.citationNote | safe }}
+
+{% elif ".md" in mirror.inputPath %}
+{# Markdown to begin with — emit the source verbatim. Perfect fidelity, and it
+   covers posts, the legal pages, support, and anything added later. #}
+{{ mirror.rawInput | safe | trim }}
+
+{% else %}
+{{ mirror.data.description | default(site.description) | safe }}
+{% endif %}
+---
+
+{{ site.name | safe }} — {{ "/" | siteUrl }}
+Site index for language models: {{ "/llms.txt" | siteUrl }}

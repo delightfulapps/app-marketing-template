@@ -1,5 +1,6 @@
 ---
 layout: page.webc
+schemaKind: legal
 title: Privacy Policy
 description: "TODO: one sentence summary of how the app handles personal data."
 ogImage: /assets/og/legal.png

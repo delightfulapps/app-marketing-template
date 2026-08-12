@@ -37,6 +37,10 @@ jobs:
       # Validates the social-card metadata against the built output.
       - run: npm run check:og
 
+      # Validates what machines read: the JSON-LD on every page, /llms.txt, the
+      # markdown mirrors, and the AI-crawler policy in robots.txt.
+      - run: npm run check:ai
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

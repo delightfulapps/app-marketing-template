@@ -1,5 +1,6 @@
 ---
 layout: page.webc
+schemaKind: support
 title: Support
 description: "TODO: how to get help with the app. This page doubles as the Support URL on your App Store listing."
 updated: 2026-08-01

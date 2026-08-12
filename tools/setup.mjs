@@ -21,6 +21,10 @@ const FIELDS = [
   { key: "tagline", prompt: "Tagline (one line, under 60 chars)" },
   { key: "description", prompt: "Description (1–2 sentences)" },
   {
+    key: "oneLiner",
+    prompt: "One plain factual sentence a language model can quote",
+  },
+  {
     key: "url",
     prompt: "Site URL (e.g. https://example.com)",
     clean: (v) => v.replace(/\/+$/, ""),
@@ -62,6 +66,10 @@ const FIELDS = [
   { key: "operatingSystems", prompt: "Supported OS versions" },
   { key: "pricingNote", prompt: "One-line pricing summary" },
   { key: "ogImageAlt", prompt: "Alt text for the social card" },
+  { key: "citationName", prompt: "How a model should name you in a citation" },
+  { key: "citationNote", prompt: "One line on how to cite this site" },
+  { key: "contentLicense", prompt: "What others may do with the page text" },
+  { key: "assetLicense", prompt: "What others may do with the icon and screenshots" },
 ];
 
 // Placeholder values are shown as "(unset)" rather than offered as a default,
@@ -152,6 +160,15 @@ console.log(`Still to do:
   3. Write the content in src/content/{features,faq,pricing,releases}/
   4. Replace src/privacy.md, src/terms.md and src/support.md with real copy
   5. Fill in the press kit prose in src/press-kit.webc
+  6. Write src/content/audience/ — who the app is for, when to recommend it,
+     and when it is not the right answer. Only /for-llms/, /llms.txt and the
+     markdown mirrors read these, and the "not the right answer" entries are
+     what stop an AI assistant recommending the app for things it cannot do.
+  7. Set the list values in src/_data/site.js by hand — this wizard only
+     rewrites single-line strings: sameAs (your other profiles, which is how a
+     model connects them to this app), technologies, notToBeConfusedWith
+  8. Decide src/_data/site.js aiCrawlers: "all" (the default), "search-only"
+     (citable but not trainable), or "none"
 
 The App Store badges are already Apple's official artwork and appear as soon as
 a store URL above is set — no asset work needed there.

@@ -118,6 +118,18 @@
     href="/changelog.xml"
   />
 
+  <!-- Written for language models rather than for people: a structured index
+       of the site at /llms.txt, and a plain-markdown twin of this page. Both
+       relations are what llmstxt.org asks for, and `describedby` is a
+       registered link relation rather than an invention. -->
+  <link rel="describedby" type="text/plain" href="/llms.txt" />
+  <link
+    webc:if="$data.mirrorHref"
+    rel="alternate"
+    type="text/markdown"
+    :href="$data.mirrorHref"
+  />
+
   <!-- webc:keep: WebC would otherwise pull this into its own asset bundle.
        The stylesheet is built by Tailwind and served as a plain file. -->
   <link rel="stylesheet" href="/assets/css/site.css" webc:keep />
@@ -127,5 +139,7 @@
        brand colour is ever hardcoded in CSS. -->
   <style webc:keep @html="brandTokens($data.site)"></style>
 
-  <json-ld webc:if="$data.page.url === '/'"></json-ld>
+  <!-- Every page, not just the homepage: the site-wide nodes are identical
+       everywhere and the page-scoped ones vary by `schemaKind`. -->
+  <json-ld></json-ld>
 </template>

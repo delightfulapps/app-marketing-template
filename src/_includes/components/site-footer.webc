@@ -10,6 +10,9 @@
     <nav aria-label="Footer" class="flex flex-wrap items-center gap-x-5 gap-y-2">
       <a href="/support/" class="hover:text-fg">Support</a>
       <a href="/press-kit/" class="hover:text-fg">Press kit</a>
+      <!-- A real link, not just a <head> tag: crawlers that never fetch
+           /llms.txt still follow ordinary hrefs. -->
+      <a href="/for-llms/" class="hover:text-fg">For LLMs</a>
       <a href="/privacy/" class="hover:text-fg">Privacy</a>
       <a href="/terms/" class="hover:text-fg">Terms</a>
       <a :href="`mailto:${$data.site.supportEmail}`" class="hover:text-fg">Contact</a>

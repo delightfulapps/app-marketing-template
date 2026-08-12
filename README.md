@@ -7,6 +7,10 @@ changelog, blog and legal pages, with structured data, Open Graph cards, two
 Atom feeds, a sitemap and a GitHub Pages deploy. Everything a new app site needs
 before it needs anything specific.
 
+It is finished for machine readers too — JSON-LD on every page, an `/llms.txt`
+index, a `/for-llms/` facts page, a markdown twin of every page, and a one-knob
+AI-crawler policy. See [Discoverability for language models](#discoverability-for-language-models).
+
 Every string starts as a placeholder. `npm run check:todos` fails until they are
 gone, so a placeholder cannot ship by accident.
 
@@ -35,6 +39,8 @@ npm run serve
 | Blog posts | `src/blog/` |
 | Legal and support copy | `src/privacy.md`, `src/terms.md`, `src/support.md` |
 | Press kit prose | `src/press-kit.webc` |
+| Who the app is for, when to recommend it, when not to | `src/content/audience/` |
+| Which AI crawlers are allowed in | `aiCrawlers` in `src/_data/site.js` |
 | Which sections appear on the homepage | `src/index.webc` |
 | Header navigation | `eleventyNavigation` front matter on each page |
 | Styling | `src/styles/tailwind.css` |
@@ -82,12 +88,85 @@ will not bring the section back.
 | `npm run serve` | Dev server with live reload |
 | `npm run build` | Build to `_site/` |
 | `npm run setup` | Interactive first-run configuration |
-| `npm run check` | `check:todos` then `check:og` |
+| `npm run check` | `check:todos`, then `check:og`, then `check:ai` |
 | `npm run check:todos` | Fails while placeholders remain |
 | `npm run check:og` | Validates social-card metadata against the built output |
+| `npm run check:ai` | Validates JSON-LD, `llms.txt`, the mirrors and `robots.txt` |
 | `npm run icons` | Icon set from `icon.png` (needs ImageMagick) |
 | `npm run og` | 1200×630 social cards (needs librsvg) |
 | `npm run clean` | Remove `_site/` and the generated CSS |
+
+## Discoverability for language models
+
+A growing share of the people who will hear about your app never see your site —
+they get an answer from an assistant that read it. That answer is assembled from
+whatever the crawler found, and no major AI crawler except Google's runs
+JavaScript, so what it found is the raw HTML. This template is static Eleventy
+output, which clears that bar to begin with; the rest is about giving those
+readers something accurate and structured to work with.
+
+Four surfaces, all generated from `src/_data/site.js` and the content
+collections, so none of them is maintained by hand and none can drift from the
+site:
+
+| Surface | What it is |
+| --- | --- |
+| JSON-LD on every page | One `@graph` per page: `Organization`, `WebSite`, `SoftwareApplication`/`Product`, the page itself and its breadcrumbs, plus `FAQPage`, `BlogPosting` or an `ItemList` of releases where those apply |
+| `/llms.txt` | The [llmstxt.org](https://llmstxt.org) index — title, one-line summary, and curated links to every page worth reading |
+| `/llms-full.txt` | The full text of the whole site in one markdown file, for a model that would rather read once than crawl |
+| `/for-llms/` and `index.md` mirrors | A facts page for assistants, and a plain-markdown twin of every page at the same address with `index.md` appended |
+
+Three knobs are worth a decision rather than a default:
+
+**`oneLiner`** is the one plainly factual sentence a model should quote. It is
+deliberately separate from `tagline`, which is allowed to be clever. Keep its
+wording identical to how you describe the app elsewhere — consistent phrasing is
+what lets a model connect this site to mentions of it somewhere else.
+
+**`src/content/audience/`** holds who the app is for, when to recommend it, and
+when it is not the answer. The last of those is the highest-value writing on the
+whole site for this purpose: it is the only place that tells an assistant when
+*not* to suggest your app, and one with nothing to go on will suggest it for
+everything.
+
+**`aiCrawlers`** decides who gets in, and the two kinds of bot are not the same
+decision. Training crawlers harvest pages into a dataset; blocking them keeps
+you out of a future model's weights and has no effect on whether you can be
+cited today. Retrieval bots fetch a page *now*, because someone just asked a
+question it might answer — blocking those is what makes a site invisible in AI
+answers.
+
+| Value | Effect |
+| --- | --- |
+| `"all"` | Both kinds. The default: a marketing site exists to be found |
+| `"search-only"` | Citable, not trainable — retrieval in, dataset harvesters out |
+| `"none"` | Neither. You will not appear in AI answers |
+
+Classic search — Googlebot, Bingbot, Applebot, DuckDuckBot — is never affected
+by this setting. Note that `Google-Extended` and `Applebot-Extended` are opt-out
+tokens rather than crawlers: disallowing them removes you from Gemini and Apple
+Intelligence without touching Google Search or Spotlight, which is why they sit
+in the training bucket. Plain `Applebot` is the Siri and Spotlight crawler and
+stays allowed under every setting. The full lists are in
+[src/robots.txt.njk](src/robots.txt.njk).
+
+### One thing to check after your first deploy
+
+GitHub Pages decides the `Content-Type` of the `.md` mirrors, and there is no
+way to set a header from this repo. Once the site is live:
+
+```bash
+curl -sI https://your-domain/index.md | grep -i content-type
+```
+
+`text/markdown` or `text/plain` — nothing to do. `application/octet-stream` makes
+a browser download the file instead of showing it: set `mirrorExtension` to
+`"txt"` in `site.js`. The permalink, the `<link>` tag in `<head>` and `check:ai`
+all read that one value, so that is the entire change. Most model fetchers read
+the body whatever the header says, so this is polish rather than correctness.
+
+Set `markdownMirrors: false` to drop the mirrors altogether; `/llms-full.txt`
+still carries every page's content.
 
 ## How it fits together
 
@@ -105,8 +184,15 @@ will not bring the section back.
   The text drawn *on* the brand colour is derived from its luminance, so there
   is no second knob to forget.
 - **SEO is computed once** in `src/src.11tydata.js`. Pages set optional front
-  matter (`title`, `description`, `ogImage`, `ogType`, `updated`, `noindex`) and
-  every title, canonical URL and card tag follows.
+  matter (`title`, `description`, `ogImage`, `ogType`, `updated`, `noindex`,
+  `schemaKind`) and every title, canonical URL, card tag, structured-data shape
+  and markdown mirror follows. `schemaKind` is set explicitly rather than
+  sniffed from the URL, so renaming a file cannot quietly downgrade a page.
+- **The structured data cannot contain a placeholder**, by construction rather
+  than by checking afterwards: every user-supplied string in
+  `json-ld.webc` passes through a filter that drops unreplaced values, and
+  undefined keys are omitted. The cost is that `check:ai` reports those fields
+  as missing until `site.js` is filled in, which is the intended signal.
 - **The custom domain comes from `site.url`** via `src/CNAME.njk`, so the deploy
   workflow has nothing to keep in sync. Delete that file if you deploy elsewhere.
 - **The store badges are Apple's official artwork**, fetched from
@@ -123,12 +209,16 @@ will not bring the section back.
 ## Deploying
 
 `.github/workflows/deploy.yml` builds and publishes to GitHub Pages on every
-push to `main`, running both checks first. Enable Pages for the repository with
-source set to GitHub Actions, and point your domain's DNS at GitHub.
+push to `main`, running all three checks first. Enable Pages for the repository
+with source set to GitHub Actions, and point your domain's DNS at GitHub.
 
 Expect the first run to fail at `check:todos` — that is the guard working, not a
 broken workflow. It goes green once the placeholders are replaced. Drop that
 step from the workflow if you would rather deploy a half-filled site.
+
+`check:ai` fails on a fresh clone for the same reason and needs no separate
+explanation: the structured data drops placeholder values rather than emitting
+them, so an unfilled `site.js` shows up there as missing required fields.
 
 ## Three WebC gotchas worth knowing
 

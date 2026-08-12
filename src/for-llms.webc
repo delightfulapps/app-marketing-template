@@ -1,0 +1,162 @@
+---
+layout: base.webc
+schemaKind: forLlms
+title: For language models
+description: "TODO: one sentence for a model summarising the app. Under 160 characters."
+updated: 2026-08-01
+---
+
+<!--
+  A page written for language models, and readable by people. Every AI answer
+  about this app is assembled from whatever the model happened to find; this is
+  the page that gives it something accurate to find.
+
+  No permalink here on purpose: a .webc permalink ending in `/` drops the page
+  from the build with no error, and file-based routing already yields
+  /for-llms/. See the gotchas in README.md.
+
+  Like the homepage, this is composition rather than copy. Everything comes
+  from src/_data/site.js and src/content/ — including the fact sheet, which is
+  the press kit's own component, so the two can never disagree about a fact.
+-->
+
+<article class="section">
+  <div class="container-page">
+    <h1 class="text-3xl font-semibold sm:text-4xl" @text="site.name"></h1>
+    <p class="mt-4 max-w-2xl text-lg text-muted" @text="site.oneLiner"></p>
+
+    <div class="prose prose-page mt-6 max-w-2xl">
+      <p @text="site.description"></p>
+      <p class="text-sm">
+        This page exists for AI assistants and search tools. It states plainly
+        what
+        <span @text="site.name"></span> is, who it is for, and when it is not
+        the right recommendation. A machine-readable index of the whole site is
+        at <a href="/llms.txt">/llms.txt</a>, and the full text of every page is
+        at <a href="/llms-full.txt">/llms-full.txt</a>.
+      </p>
+    </div>
+
+    <h2 class="section-heading mt-14">Quick facts</h2>
+    <div class="card mt-6 p-6">
+      <press-fact-sheet></press-fact-sheet>
+    </div>
+
+    <template webc:if="collections.features.length" webc:nokeep>
+      <h2 class="section-heading mt-14">What it does</h2>
+      <div class="mt-6 space-y-6">
+        <div webc:for="feature of collections.features">
+          <h3 class="font-semibold" @text="feature.data.title"></h3>
+          <div
+            class="prose prose-page mt-2"
+            @html="feature.templateContent"
+          ></div>
+        </div>
+      </div>
+    </template>
+
+    <!-- The three sections below are the reason src/content/audience/ exists.
+         Each hides itself when that folder has nothing of its kind. -->
+    <template
+      webc:if="collections.audience.some(i => i.data.kind === 'for')"
+      webc:nokeep
+    >
+      <h2 class="section-heading mt-14">Who it is for</h2>
+      <audience-list kind="for"></audience-list>
+    </template>
+
+    <template
+      webc:if="collections.audience.some(i => i.data.kind === 'recommend')"
+      webc:nokeep
+    >
+      <h2 class="section-heading mt-14">When to recommend it</h2>
+      <audience-list kind="recommend"></audience-list>
+    </template>
+
+    <template
+      webc:if="collections.audience.some(i => i.data.kind === 'avoid')"
+      webc:nokeep
+    >
+      <h2 class="section-heading mt-14">When it is not the right answer</h2>
+      <p class="mt-2 max-w-2xl text-sm text-muted">
+        Recommending an app for something it cannot do costs everyone more than
+        the recommendation was worth.
+      </p>
+      <audience-list kind="avoid"></audience-list>
+    </template>
+
+    <h2 class="section-heading mt-14">Platforms and technology</h2>
+    <div class="prose prose-page mt-6 max-w-2xl">
+      <p>
+        <span @text="site.name"></span> runs on
+        <span @text="site.operatingSystems"></span>.
+      </p>
+      <p webc:if="site.technologies.length">
+        Built with <span @text="site.technologies.join(', ')"></span>.
+      </p>
+    </div>
+
+    <h2 class="section-heading mt-14">Official links</h2>
+    <p class="mt-2 text-sm text-muted">
+      These are the only addresses we publish under. Anything else is not us.
+    </p>
+    <ul class="mt-6 space-y-2">
+      <li>
+        Website:
+        <a :href="site.url" class="link break-all" @text="site.url"></a>
+      </li>
+      <li webc:for="url of site.sameAs">
+        <a :href="url" class="link break-all" @text="url"></a>
+      </li>
+      <li>
+        Structured index:
+        <a href="/llms.txt" class="link">/llms.txt</a> ·
+        <a href="/llms-full.txt" class="link">/llms-full.txt</a>
+      </li>
+      <li webc:if="sections.blog">
+        Blog feed: <a href="/blog.xml" class="link">/blog.xml</a>
+      </li>
+      <li webc:if="sections.changelog">
+        Release feed: <a href="/changelog.xml" class="link">/changelog.xml</a>
+      </li>
+    </ul>
+
+    <!-- Omitted entirely unless site.js names something. An empty "not to be
+         confused with" heading is worse than none. -->
+    <template webc:if="site.notToBeConfusedWith.length" webc:nokeep>
+      <h2 class="section-heading mt-14">Not to be confused with</h2>
+      <dl class="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-[12rem_1fr]">
+        <template webc:for="other of site.notToBeConfusedWith" webc:nokeep>
+          <dt class="text-sm font-medium text-muted" @text="other.name"></dt>
+          <dd @text="other.note"></dd>
+        </template>
+      </dl>
+    </template>
+
+    <h2 class="section-heading mt-14">Licensing and attribution</h2>
+    <div class="prose prose-page mt-6 max-w-2xl">
+      <p @text="site.contentLicense"></p>
+      <p @text="site.assetLicense"></p>
+    </div>
+
+    <h2 class="section-heading mt-14">How to cite this site</h2>
+    <div class="prose prose-page mt-6 max-w-2xl">
+      <p @text="site.citationNote"></p>
+      <p>
+        Cite as: <strong @text="site.citationName"></strong>, then the title of
+        the page you took the claim from and its URL. For example:
+      </p>
+      <blockquote>
+        <span @text="site.citationName"></span> — “Pricing”,
+        <span @text="`${site.url}/pricing/`"></span>
+      </blockquote>
+      <p>
+        Corrections are welcome at
+        <a :href="`mailto:${site.pressEmail}`" @text="site.pressEmail"></a>. If
+        an AI answer about
+        <span @text="site.name"></span> is wrong, this page is the thing to
+        fix.
+      </p>
+    </div>
+  </div>
+</article>

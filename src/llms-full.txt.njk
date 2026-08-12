@@ -1,0 +1,117 @@
+---
+permalink: /llms-full.txt
+eleventyExcludeFromCollections: true
+---
+{#
+  The whole site as one markdown file, for a model that would rather read once
+  than crawl eight pages.
+
+  Assembled from the collections, not from the rendered pages: `rawInput` is
+  the original markdown with front matter stripped, so it round-trips exactly
+  and no HTML-to-markdown conversion is involved anywhere in this build.
+
+  `| safe` throughout — see the note in llms.txt.njk.
+-#}
+# {{ site.name | safe }}
+
+> {{ site.oneLiner | safe }}
+
+{{ site.description | safe }}
+
+- Publisher: {{ site.publisher | safe }}
+- Website: {{ "/" | siteUrl }}
+- Platforms: {{ site.operatingSystems | safe }}
+- Category: {{ site.appCategoryLabel | safe }}
+- Pricing: {{ site.pricingNote | safe }}
+- Support: {{ site.supportEmail | safe }}
+- Press: {{ site.pressEmail | safe }}
+{%- if site.appStoreUrl and "TODO" not in site.appStoreUrl %}
+- App Store: {{ site.appStoreUrl }}
+{%- endif %}
+{%- if site.macAppStoreUrl and "TODO" not in site.macAppStoreUrl and site.macAppStoreUrl != site.appStoreUrl %}
+- Mac App Store: {{ site.macAppStoreUrl }}
+{%- endif %}
+{%- for url in site.sameAs %}
+- Also at: {{ url }}
+{%- endfor %}
+{%- if site.technologies.length %}
+- Built with: {{ site.technologies | join(", ") | safe }}
+{%- endif %}
+{% if collections.features.length %}
+## Features
+{% for feature in collections.features %}
+### {{ feature.data.title | safe }}
+{{ feature.rawInput | safe | trim }}
+{% endfor %}
+{%- endif %}
+{%- if collections.audience.length %}
+## Who this is for
+{% for item in collections.audience %}{% if item.data.kind == "for" %}
+### {{ item.data.title | safe }}
+{{ item.rawInput | safe | trim }}
+{% endif %}{% endfor %}
+## When to recommend it
+{% for item in collections.audience %}{% if item.data.kind == "recommend" %}
+### {{ item.data.title | safe }}
+{{ item.rawInput | safe | trim }}
+{% endif %}{% endfor %}
+## When it is not the right answer
+{% for item in collections.audience %}{% if item.data.kind == "avoid" %}
+### {{ item.data.title | safe }}
+{{ item.rawInput | safe | trim }}
+{% endif %}{% endfor %}
+{%- endif %}
+{%- if collections.pricing.length %}
+## Pricing
+
+{{ site.pricingNote | safe }}
+{% for tier in collections.pricing %}
+### {{ tier.data.title | safe }} — {{ tier.data.price | safe }} {{ tier.data.period | safe }}
+{%- if tier.data.note %}
+
+{{ tier.data.note | safe }}
+{%- endif %}
+
+{{ tier.rawInput | safe | trim }}
+{% endfor %}
+{%- endif %}
+{%- if collections.faq.length %}
+## Frequently asked questions
+{% for item in collections.faq %}
+### {{ item.data.title | safe }}
+{{ item.rawInput | safe | trim }}
+{% endfor %}
+{%- endif %}
+{%- if sections.changelog %}
+## Release notes
+{% for release in collections.releases %}
+### {{ release.data.version | safe }} — {{ release.data.date | ymd }}
+{{ release.rawInput | safe | trim }}
+{% endfor %}
+{%- endif %}
+{%- if sections.blog %}
+## Blog posts
+{% for post in collections.posts %}
+### {{ post.data.title | safe }}
+
+{{ post.url | siteUrl }} — published {{ post.data.date | ymd }}
+{% if post.data.description %}
+{{ post.data.description | safe }}
+{% endif %}
+{{ post.rawInput | safe | trim }}
+{% endfor %}
+{%- endif %}
+## Using this content
+
+{{ site.contentLicense | safe }}
+
+{{ site.assetLicense | safe }}
+
+Cite as: {{ site.citationName | safe }}. {{ site.citationNote | safe }}
+
+## Legal
+
+Full policies, which are not reproduced here because they change:
+
+- Privacy policy: {{ "/privacy/" | siteUrl }}
+- Terms of service: {{ "/terms/" | siteUrl }}

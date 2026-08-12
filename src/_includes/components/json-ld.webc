@@ -1,85 +1,367 @@
 <script webc:setup>
-  // One @graph for the homepage: who publishes the site, the site itself, the
-  // app being marketed, and the FAQ. The FAQ entries come from the same
-  // markdown collection the visible FAQ renders, so the two can never drift.
-  function buildGraph(data) {
+  // One @graph per page. Four nodes are the same everywhere — who publishes
+  // the site, the site, the app, and the page you are on — and `schemaKind`
+  // adds whatever else that particular kind of page warrants.
+  //
+  // The site-wide nodes really are byte-identical on every page, deliberately.
+  // They share an @id across the whole site, so a richer #app on /pricing/ than
+  // on / would mean one identifier describing two different things. tools/
+  // check-ai.mjs asserts the three of them deep-equal across every page.
+  //
+  // Everything here is a pure function of `data` — see the webc:setup note in
+  // site-head.webc for why that is not optional.
+
+  // Placeholders must never reach the output. Rather than checking for them
+  // afterwards, every user-supplied string goes through this on the way in and
+  // undefined keys are dropped, so a TODO cannot be emitted by construction.
+  const real = (v) =>
+    v && !String(v).startsWith("TODO") ? v : undefined;
+
+  const realList = (list) => {
+    const kept = (list ?? []).filter((v) => real(v));
+    return kept.length ? kept : undefined;
+  };
+
+  // Always derive the origin rather than using site.url verbatim. `new URL()`
+  // lowercases the host, so seo.canonical is already normalised — a mixed-case
+  // site.url would otherwise produce @ids that no reference in the graph
+  // matches. tools/check-ai.mjs fails on exactly that.
+  const origin = (site) => new URL(site.url).origin;
+
+  // Drops every key whose value is undefined or an empty array, so builders can
+  // assign optional fields unconditionally.
+  const compact = (obj) =>
+    Object.fromEntries(
+      Object.entries(obj).filter(
+        ([, v]) => v !== undefined && !(Array.isArray(v) && v.length === 0),
+      ),
+    );
+
+  // schema.org wants prose, and the markdown has already been rendered to HTML
+  // for the visible page — so flatten the tags back out.
+  const plain = (html) =>
+    String(html ?? "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&(amp|lt|gt|quot|#39);/g, (_, e) =>
+        ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[e],
+      )
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const isoDate = (value) => {
+    if (!value) return undefined;
+    const d = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(d.valueOf()) ? undefined : d.toISOString();
+  };
+
+  // --- Site-wide nodes ---------------------------------------------------
+
+  function orgNode(site) {
+    const abs = (path) => new URL(path, site.url).href;
+    return compact({
+      "@type": "Organization",
+      "@id": `${origin(site)}/#organization`,
+      name: real(site.publisher),
+      url: origin(site),
+      logo: abs("/assets/icons/icon-512.png"),
+      email: real(site.supportEmail),
+      foundingDate: real(site.foundedYear),
+      // How a model works out that a post from one of these accounts is about
+      // this app rather than something else with a similar name.
+      sameAs: realList(site.sameAs),
+    });
+  }
+
+  function siteNode(site) {
+    return compact({
+      "@type": "WebSite",
+      "@id": `${origin(site)}/#website`,
+      url: origin(site),
+      name: real(site.name),
+      description: real(site.description),
+      inLanguage: site.locale.replace("_", "-"),
+      publisher: { "@id": `${origin(site)}/#organization` },
+    });
+  }
+
+  // Tiers carry `amount` (a number) and `billingPeriod` (an ISO 8601 duration)
+  // alongside the display `price` string, because "$4.99 per month" cannot be
+  // parsed back into a price and a currency without guessing at the language.
+  // A tier without them is skipped rather than mangled.
+  function offersFrom(site, pricing) {
+    const priced = (pricing ?? [])
+      .filter((tier) => typeof tier.data.amount === "number")
+      .map((tier) =>
+        compact({
+          "@type": "Offer",
+          name: real(tier.data.title),
+          price: String(tier.data.amount),
+          priceCurrency: site.priceCurrency,
+          ...(tier.data.billingPeriod
+            ? {
+                priceSpecification: {
+                  "@type": "UnitPriceSpecification",
+                  price: String(tier.data.amount),
+                  priceCurrency: site.priceCurrency,
+                  billingDuration: tier.data.billingPeriod,
+                },
+              }
+            : {}),
+        }),
+      );
+
+    // Nothing priced yet: fall back to the single headline offer from site.js,
+    // which is what a free download with no tiers filled in actually is.
+    if (!priced.length) {
+      return {
+        "@type": "Offer",
+        price: String(site.price),
+        priceCurrency: site.priceCurrency,
+      };
+    }
+
+    const amounts = priced.map((offer) => Number(offer.price));
+    return {
+      "@type": "AggregateOffer",
+      lowPrice: String(Math.min(...amounts)),
+      highPrice: String(Math.max(...amounts)),
+      priceCurrency: site.priceCurrency,
+      offerCount: priced.length,
+      offers: priced,
+    };
+  }
+
+  function appNode(data) {
     const { site, collections, screenshots } = data;
     const abs = (path) => new URL(path, site.url).href;
-    const storeUrl = [site.appStoreUrl, site.macAppStoreUrl].find(
-      (u) => u && !u.startsWith("TODO"),
-    );
+
+    const storeUrl = [site.appStoreUrl, site.macAppStoreUrl]
+      .map(real)
+      .find(Boolean);
 
     const shots = Object.values(screenshots ?? {})
       .flatMap((group) => group.items)
       .map((s) => abs(s.url));
 
-    // schema.org wants prose here, and the markdown has already been rendered
-    // to HTML for the visible FAQ — so flatten the tags back out.
-    const plain = (html) =>
-      String(html ?? "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&(amp|lt|gt|quot|#39);/g, (_, e) =>
-          ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[e],
-        )
-        .replace(/\s+/g, " ")
-        .trim();
+    const latest = (collections?.releases ?? [])[0];
 
-    const faqEntries = (collections?.faq ?? []).map((item) => ({
+    return compact({
+      // Also a Product: the two vocabularies overlap for paid software, and
+      // consumers that only understand one of them still get the offers.
+      "@type": ["SoftwareApplication", "Product"],
+      "@id": `${origin(site)}/#app`,
+      name: real(site.name),
+      description: real(site.description),
+      abstract: real(site.oneLiner),
+      applicationCategory: real(site.appCategory),
+      operatingSystem: real(site.operatingSystems),
+      publisher: { "@id": `${origin(site)}/#organization` },
+      downloadUrl: storeUrl,
+      installUrl: storeUrl,
+      screenshot: shots,
+      softwareVersion: latest ? real(latest.data.version) : undefined,
+      releaseNotes: latest ? plain(latest.templateContent) || undefined : undefined,
+      featureList: realList(
+        (collections?.features ?? []).map((item) => item.data.title),
+      ),
+      offers: offersFrom(site, collections?.pricing),
+    });
+  }
+
+  // --- Page-scoped nodes -------------------------------------------------
+
+  // WebPage covers most things; a page whose job is to list other things is a
+  // CollectionPage, which is a stronger hint about what it holds.
+  const PAGE_TYPES = {
+    blogIndex: "CollectionPage",
+    changelog: "CollectionPage",
+    pressKit: "AboutPage",
+    forLlms: "AboutPage",
+  };
+
+  // Turns a URL segment into something readable when the nav has no entry for
+  // it — /press-kit/ has no nav link but still needs a breadcrumb label.
+  const titleCase = (segment) =>
+    segment
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+  // Safe to read collections here: components render after every collection is
+  // built. eleventyComputed is the place where that is not true.
+  function navLabel(collections, url) {
+    const flatten = (entries) =>
+      (entries ?? []).flatMap((entry) => [entry, ...flatten(entry.children)]);
+    return flatten(collections?.nav).find((entry) => entry.url === url)?.key;
+  }
+
+  function breadcrumbNode(data) {
+    const { site, collections } = data;
+    const abs = (path) => new URL(path, site.url).href;
+
+    const crumbs = [{ name: "Home", url: "/" }];
+    const segments = data.page.url.split("/").filter(Boolean);
+
+    segments.forEach((segment, i) => {
+      const url = `/${segments.slice(0, i + 1).join("/")}/`;
+      const isLeaf = i === segments.length - 1;
+      crumbs.push({
+        name:
+          navLabel(collections, url) ||
+          (isLeaf ? real(data.title) : undefined) ||
+          titleCase(segment),
+        url,
+      });
+    });
+
+    return {
+      "@type": "BreadcrumbList",
+      "@id": `${data.seo.canonical}#breadcrumb`,
+      itemListElement: crumbs.map((crumb, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: crumb.name,
+        item: abs(crumb.url),
+      })),
+    };
+  }
+
+  function webPageNode(data) {
+    const { site } = data;
+    return compact({
+      "@type": PAGE_TYPES[data.schemaKind] ?? "WebPage",
+      "@id": `${data.seo.canonical}#webpage`,
+      url: data.seo.canonical,
+      name: data.seo.title,
+      description: data.seo.description,
+      inLanguage: site.locale.replace("_", "-"),
+      isPartOf: { "@id": `${origin(site)}/#website` },
+      breadcrumb: { "@id": `${data.seo.canonical}#breadcrumb` },
+      // Every page on a single-app marketing site is, ultimately, about the app.
+      about: { "@id": `${origin(site)}/#app` },
+      primaryImageOfPage: data.seo.image,
+      datePublished: isoDate(data.date),
+      dateModified: isoDate(data.updated),
+    });
+  }
+
+  function articleNode(data) {
+    const { site } = data;
+    return compact({
+      "@type": "BlogPosting",
+      "@id": `${data.seo.canonical}#article`,
+      headline: real(data.title),
+      description: data.seo.description,
+      image: data.seo.image,
+      inLanguage: site.locale.replace("_", "-"),
+      datePublished: isoDate(data.date),
+      dateModified: isoDate(data.updated) ?? isoDate(data.date),
+      // A post can name its own author in front matter; otherwise the company
+      // that publishes the site wrote it.
+      author: real(data.author)
+        ? { "@type": "Person", name: data.author }
+        : { "@id": `${origin(site)}/#organization` },
+      publisher: { "@id": `${origin(site)}/#organization` },
+      mainEntityOfPage: { "@id": `${data.seo.canonical}#webpage` },
+      isPartOf: { "@id": `${origin(site)}/#website` },
+    });
+  }
+
+  // The FAQ renders on more than one page, but the structured data is emitted
+  // once: duplicate FAQPage markup across two URLs is a warning in Search
+  // Console, and the answers reach language models through /llms-full.txt
+  // regardless.
+  function faqNode(data) {
+    const entries = (data.collections?.faq ?? []).map((item) => ({
       "@type": "Question",
       name: item.data.title,
-      acceptedAnswer: { "@type": "Answer", text: plain(item.content) },
+      acceptedAnswer: { "@type": "Answer", text: plain(item.templateContent) },
     }));
+    if (!entries.length) return undefined;
+    return {
+      "@type": "FAQPage",
+      "@id": `${origin(data.site)}/#faq`,
+      mainEntity: entries,
+    };
+  }
 
+  function releaseListNode(data) {
+    const releases = data.collections?.releases ?? [];
+    if (!releases.length) return undefined;
+    return {
+      "@type": "ItemList",
+      "@id": `${data.seo.canonical}#releases`,
+      name: `${real(data.site.name) ?? "App"} release notes`,
+      itemListOrder: "https://schema.org/ItemListOrderDescending",
+      itemListElement: releases.map((release, i) =>
+        compact({
+          "@type": "ListItem",
+          position: i + 1,
+          name: release.data.version,
+          item: compact({
+            "@type": "SoftwareApplication",
+            name: real(data.site.name),
+            softwareVersion: release.data.version,
+            datePublished: isoDate(release.data.date),
+            releaseNotes: plain(release.templateContent) || undefined,
+          }),
+        }),
+      ),
+    };
+  }
+
+  // --- Composition -------------------------------------------------------
+
+  function buildGraph(data) {
     const graph = [
-      {
-        "@type": "Organization",
-        "@id": `${site.url}/#organization`,
-        name: site.publisher,
-        url: site.url,
-        logo: abs("/assets/icons/icon-512.png"),
-        email: site.supportEmail,
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${site.url}/#website`,
-        url: site.url,
-        name: site.name,
-        description: site.description,
-        inLanguage: site.locale.replace("_", "-"),
-        publisher: { "@id": `${site.url}/#organization` },
-      },
-      {
-        "@type": "SoftwareApplication",
-        "@id": `${site.url}/#app`,
-        name: site.name,
-        description: site.description,
-        applicationCategory: site.appCategory,
-        operatingSystem: site.operatingSystems,
-        publisher: { "@id": `${site.url}/#organization` },
-        ...(storeUrl ? { downloadUrl: storeUrl, installUrl: storeUrl } : {}),
-        ...(shots.length ? { screenshot: shots } : {}),
-        offers: {
-          "@type": "Offer",
-          price: site.price,
-          priceCurrency: site.priceCurrency,
-        },
-      },
+      orgNode(data.site),
+      siteNode(data.site),
+      appNode(data),
+      webPageNode(data),
+      breadcrumbNode(data),
     ];
 
-    if (faqEntries.length) {
-      graph.push({
-        "@type": "FAQPage",
-        "@id": `${site.url}/#faq`,
-        mainEntity: faqEntries,
-      });
+    switch (data.schemaKind) {
+      case "home":
+        graph.push(faqNode(data));
+        break;
+      case "post":
+        graph.push(articleNode(data));
+        break;
+      case "changelog":
+        graph.push(releaseListNode(data));
+        break;
     }
 
-    return JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+    const json = JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": graph.filter(Boolean),
+    });
+
+    // Escape the three characters that mean something to an HTML parser as JSON
+    // escapes, so nothing is left for WebC to entity-encode on the way out.
+    //
+    // Without this, an app called "Bits & Bobs" ships `"name":"Bits &amp; Bobs"`
+    // — valid JSON whose value is the wrong string, which is worse than a parse
+    // error because nothing complains. Escaping the angle brackets closes the
+    // other hole at the same time: a release note containing a closing script
+    // tag would otherwise end this block early. JSON.parse turns the escapes
+    // back into the original characters, so consumers see what was written.
+    //
+    // (That closing-tag hazard is not hypothetical — spelling it out literally
+    // in this comment is what broke the build while it was being written.)
+    return json.replace(
+      /[&<>]/g,
+      (c) => ({ "&": "\\u0026", "<": "\\u003c", ">": "\\u003e" })[c],
+    );
   }
 </script>
 
-<!-- @raw, not @html: @html re-parses the value as markup, which entity-encodes
-     the angle brackets and drops the backslashes JSON needs. -->
+<!-- @raw, not @html: @html re-parses the value as markup rather than passing it
+     through, which is not what a JSON payload wants even where the two happen to
+     agree on the output. The buildGraph escaping above is what actually keeps
+     this well-formed; tools/check-ai.mjs JSON.parses every one of these blocks
+     and checks no value came back carrying an HTML entity. -->
 <script
   type="application/ld+json"
   @raw="buildGraph($data)"

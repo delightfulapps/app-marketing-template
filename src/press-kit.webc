@@ -1,5 +1,6 @@
 ---
 layout: base.webc
+schemaKind: pressKit
 title: Press Kit
 description: "TODO: one sentence for journalists. Assets, screenshots and facts for writing about the app."
 ogImage: /assets/og/press-kit.png
