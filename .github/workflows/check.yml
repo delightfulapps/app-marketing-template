@@ -49,3 +49,29 @@ jobs:
       # Validates what machines read: the JSON-LD on every page, /llms.txt, the
       # markdown mirrors, and the AI-crawler policy in robots.txt.
       - run: npm run check:ai
+
+  # The inverse of the job above, so a pull request always gets *some* CI.
+  #
+  # This exists for Dependabot. On the template repository the full check is
+  # skipped, which would leave every dependency bump here merged on nothing at
+  # all — and this repository is where a broken Eleventy or Tailwind upgrade
+  # would spread from. So run the two things that legitimately pass while the
+  # placeholders are still in place: the build itself, and check:og, which reads
+  # generated assets and computed tags rather than the copy around them.
+  #
+  # check:todos and check:ai are absent because they are *supposed* to fail
+  # here. Adding them would only teach everyone to ignore a red cross.
+  smoke:
+    if: ${{ github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .tool-versions
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check:og
