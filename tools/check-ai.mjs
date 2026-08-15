@@ -55,6 +55,9 @@ const REQUIRED = {
     "publisher",
     "mainEntityOfPage",
   ],
+  // No datePublished, unlike BlogPosting: a guide is reference material that
+  // may legitimately never carry one, where a post without a date is a bug.
+  TechArticle: ["headline", "author", "publisher", "mainEntityOfPage"],
   FAQPage: ["mainEntity"],
   ItemList: ["itemListElement"],
 };

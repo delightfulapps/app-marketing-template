@@ -3,9 +3,9 @@
 An Eleventy template for app marketing sites — iOS, iPadOS, macOS and visionOS.
 
 Ships a complete, SEO-finished skeleton: homepage, pricing, support, press kit,
-changelog, blog and legal pages, with structured data, Open Graph cards, two
-Atom feeds, a sitemap and a GitHub Pages deploy. Everything a new app site needs
-before it needs anything specific.
+changelog, blog, guides and legal pages, with structured data, Open Graph cards,
+two Atom feeds, a sitemap and a GitHub Pages deploy. Everything a new app site
+needs before it needs anything specific.
 
 It is finished for machine readers too — JSON-LD on every page, an `/llms.txt`
 index, a `/for-llms/` facts page, a markdown twin of every page, and a one-knob
@@ -37,6 +37,7 @@ npm run serve
 | Pricing tiers | `src/content/pricing/` |
 | Release notes | `src/content/releases/` |
 | Blog posts | `src/blog/` |
+| How-to guides | add markdown to `src/guides/` |
 | Legal and support copy | `src/privacy.md`, `src/terms.md`, `src/support.md` |
 | Press kit prose | `src/press-kit.webc` |
 | Who the app is for, when to recommend it, when not to | `src/content/audience/` |
@@ -59,16 +60,38 @@ link.
 
 ### Optional sections
 
-The blog and the changelog disappear completely when they have no content, so
-neither ships as an empty shell. Delete everything in `src/blog/` and there is no
-`/blog/` page, no nav link, no `/blog.xml`, no sitemap entry and no feed link in
-`<head>`; the same goes for `src/content/releases/` and the changelog. Add a
-markdown file back and the whole section returns. [src/_data/sections.js](src/_data/sections.js)
-decides this by counting files on disk.
+Three sections — the blog, the changelog and the guides — disappear completely
+when they have no content, so none of them ships as an empty shell. Delete
+everything in `src/blog/` and there is no `/blog/` page, no nav link, no
+`/blog.xml`, no sitemap entry and no feed link in `<head>`; the same goes for
+`src/content/releases/` and the changelog, and for `src/guides/` and the guides.
+Add a markdown file back and the whole section returns.
+[src/_data/sections.js](src/_data/sections.js) decides this by counting files on
+disk.
 
 One caveat: that decision happens when the config loads, so **restart
-`npm run serve` after adding the first post or release** — a live rebuild alone
-will not bring the section back.
+`npm run serve` after adding the first post, release or guide** — a live rebuild
+alone will not bring the section back.
+
+#### Guides
+
+The blog and the changelog ship with one placeholder file each. Guides ship with
+none, so `/guides/` does not exist until you write the first one — there is
+nothing to delete if you don't want them.
+
+A guide is a markdown file in `src/guides/`. Front matter:
+
+| Key | |
+| --- | --- |
+| `title` | required — the heading, the `<title>`, and what the index sorts on |
+| `description` | strongly recommended — the one-line summary on `/guides/`, the meta description, and what `/llms.txt` shows a model |
+| `updated` | optional ISO date — renders as "Last updated", and drives `<lastmod>`, `og:updated_time` and `dateModified` |
+
+Guides are reference material rather than a timeline, so they are listed
+alphabetically by title, not newest-first, and they carry no publish date and no
+Atom feed. Everything else follows automatically: each guide gets a page at
+`/guides/<filename>/`, `TechArticle` structured data, a markdown twin, a sitemap
+entry, and a line in `/llms.txt` and `/llms-full.txt`.
 
 ## Assets to replace
 
@@ -111,7 +134,7 @@ site:
 
 | Surface | What it is |
 | --- | --- |
-| JSON-LD on every page | One `@graph` per page: `Organization`, `WebSite`, `SoftwareApplication`/`Product`, the page itself and its breadcrumbs, plus `FAQPage`, `BlogPosting` or an `ItemList` of releases where those apply |
+| JSON-LD on every page | One `@graph` per page: `Organization`, `WebSite`, `SoftwareApplication`/`Product`, the page itself and its breadcrumbs, plus `FAQPage`, `BlogPosting`, `TechArticle` for a guide, or an `ItemList` of releases or guides where those apply |
 | `/llms.txt` | The [llmstxt.org](https://llmstxt.org) index — title, one-line summary, and curated links to every page worth reading |
 | `/llms-full.txt` | The full text of the whole site in one markdown file, for a model that would rather read once than crawl |
 | `/for-llms/` and `index.md` mirrors | A facts page for assistants, and a plain-markdown twin of every page at the same address with `index.md` appended |

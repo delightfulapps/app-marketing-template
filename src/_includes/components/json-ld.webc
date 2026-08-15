@@ -174,6 +174,7 @@
   // CollectionPage, which is a stronger hint about what it holds.
   const PAGE_TYPES = {
     blogIndex: "CollectionPage",
+    guidesIndex: "CollectionPage",
     changelog: "CollectionPage",
     pressKit: "AboutPage",
     forLlms: "AboutPage",
@@ -245,10 +246,16 @@
     });
   }
 
-  function articleNode(data) {
+  // Takes a type because a guide is the same shape of thing as a post wearing a
+  // different label: TechArticle for a how-to, BlogPosting for the blog. Not
+  // HowTo — Google retired HowTo rich results, and TechArticle is what the AI
+  // crawlers read for instructional pages regardless. A guide often has no
+  // datePublished; compact() drops it, and check-ai.mjs only requires one of a
+  // post, where a missing date really is a bug.
+  function articleNode(data, type = "BlogPosting") {
     const { site } = data;
     return compact({
-      "@type": "BlogPosting",
+      "@type": type,
       "@id": `${data.seo.canonical}#article`,
       headline: real(data.title),
       description: data.seo.description,
@@ -282,6 +289,42 @@
       "@type": "FAQPage",
       "@id": `${origin(data.site)}/#faq`,
       mainEntity: entries,
+    };
+  }
+
+  // What the guides index is actually for, as far as a model is concerned: the
+  // whole list, with titles and summaries, without fetching each guide.
+  //
+  // Entries carry an inline object rather than a bare {"@id": …} pointing at
+  // the guide's own page. A one-key @id is a *reference*, and a reference to a
+  // node defined on some other page resolves to nothing — tools/check-ai.mjs
+  // fails on exactly that. Only #organization, #website and #app are safe to
+  // reference, because they are defined on every page.
+  function guideListNode(data) {
+    const guides = data.collections?.guides ?? [];
+    if (!guides.length) return undefined;
+    const abs = (path) => new URL(path, data.site.url).href;
+    return {
+      "@type": "ItemList",
+      "@id": `${data.seo.canonical}#guides`,
+      name: `${real(data.site.name) ?? "App"} guides`,
+      itemListOrder: "https://schema.org/ItemListOrderAscending",
+      numberOfItems: guides.length,
+      itemListElement: guides.map((guide, i) =>
+        compact({
+          "@type": "ListItem",
+          position: i + 1,
+          name: real(guide.data.title),
+          url: abs(guide.url),
+          item: compact({
+            "@type": "TechArticle",
+            "@id": `${abs(guide.url)}#article`,
+            headline: real(guide.data.title),
+            description: real(guide.data.description),
+            url: abs(guide.url),
+          }),
+        }),
+      ),
     };
   }
 
@@ -327,6 +370,12 @@
         break;
       case "post":
         graph.push(articleNode(data));
+        break;
+      case "guide":
+        graph.push(articleNode(data, "TechArticle"));
+        break;
+      case "guidesIndex":
+        graph.push(guideListNode(data));
         break;
       case "changelog":
         graph.push(releaseListNode(data));

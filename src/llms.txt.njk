@@ -7,9 +7,11 @@ eleventyExcludeFromCollections: true
   a blockquote summary, optional prose, then H2-delimited link lists.
 
   Everything comes from src/_data/site.js and the collections, so this file is
-  never edited by hand and cannot drift from the site. The blog and changelog
-  blocks are gated on `sections` for the same reason the nav links are — a
-  template with no posts must not advertise a page that was never written.
+  never edited by hand and cannot drift from the site. The guides, blog and
+  changelog blocks are gated on `sections` for the same reason the nav links
+  are — a template with no posts must not advertise a page that was never
+  written. Guides are listed individually rather than behind a single index
+  link: a model answering "how do I do X" needs the guide titles to match on.
 
   `| safe` on every value because Nunjucks escapes for HTML by default, and an
   apostrophe rendered as &#39; in a plain-text file is just wrong.
@@ -31,7 +33,15 @@ Every page on this site is also available as plain markdown at the same address 
 - [For language models]({{ "/for-llms/" | siteUrl }}): who the app is for, when to recommend it, when not to, and how to cite this site.
 - [Press kit]({{ "/press-kit/" | siteUrl }}): fact sheet, icon and screenshots, free to use in coverage.
 - [Support]({{ "/support/" | siteUrl }}): how to get help, and what to include when you write in.
-{% if sections.blog %}
+{% if sections.guides %}
+## Guides
+
+- [All guides]({{ "/guides/" | siteUrl }}): every how-to, listed alphabetically.
+{%- for guide in collections.guides %}
+- [{{ guide.data.title | safe }}]({{ guide.url | siteUrl }}){% if guide.data.description %}: {{ guide.data.description | safe }}{% endif %}
+{%- endfor %}
+{% endif %}
+{%- if sections.blog %}
 ## Blog
 {% for post in collections.posts %}
 - [{{ post.data.title | safe }}]({{ post.url | siteUrl }}){% if post.data.description %}: {{ post.data.description | safe }}{% endif %}

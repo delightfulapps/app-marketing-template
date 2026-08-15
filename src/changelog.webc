@@ -4,7 +4,7 @@ schemaKind: changelog
 title: Changelog
 eleventyNavigation:
   key: Changelog
-  order: 5
+  order: 6
 description: "TODO: one sentence — what's new in each release."
 ogType: article
 ogImage: /assets/og/changelog.png

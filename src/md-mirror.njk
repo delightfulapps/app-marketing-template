@@ -85,6 +85,16 @@ Release notes for {{ site.name | safe }}, newest first. Atom feed: {{ "/changelo
 - [{{ post.data.title | safe }}]({{ post.url | siteUrl }}) — {{ post.data.date | ymd }}{% if post.data.description %}: {{ post.data.description | safe }}{% endif %}
 {%- endfor %}
 
+{% elif kind == "guidesIndex" %}
+{#- Only the index needs a branch. Individual guides are markdown to begin with,
+    so they fall through to the ".md" in inputPath case below and are emitted
+    verbatim. Trimmed on the left only: stripping both sides would swallow the
+    blank line every other branch opens with. #}
+{{ mirror.data.description | safe }}
+{% for guide in collections.guides %}
+- [{{ guide.data.title | safe }}]({{ guide.url | siteUrl }}){% if guide.data.description %}: {{ guide.data.description | safe }}{% endif %}
+{%- endfor %}
+
 {% elif kind == "pressKit" %}
 Facts, assets and screenshots for writing about {{ site.name | safe }}. Everything on this page may be used in coverage without asking. Press contact: {{ site.pressEmail | safe }}
 

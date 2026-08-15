@@ -1,0 +1,38 @@
+---
+layout: base.webc
+schemaKind: guidesIndex
+title: Guides
+eleventyNavigation:
+  key: Guides
+  order: 4
+description: "Step-by-step guides and how-tos for getting the most out of the app."
+ogImage: /assets/og/guides.png
+ogImageAlt: "The app icon and name, labelled Guides."
+---
+
+<section class="section">
+  <div class="container-prose">
+    <h1 class="text-3xl font-semibold sm:text-4xl">Guides</h1>
+
+    <!-- No empty state needed: with no guides in src/guides/ this page is left
+         out of the build entirely. See src/_data/sections.js. -->
+    <!-- Alphabetical, not newest-first: a reader looking for one specific
+         how-to scans for its name. The order comes from the `guides`
+         collection in eleventy.config.js. -->
+    <ul class="mt-10 divide-y divide-border border-y border-border">
+      <li webc:for="guide of collections.guides" class="py-5">
+        <a :href="guide.url" class="group block">
+          <h2
+            class="font-semibold group-hover:text-brand"
+            @text="guide.data.title"
+          ></h2>
+          <p
+            webc:if="guide.data.description"
+            class="mt-2 text-muted"
+            @text="guide.data.description"
+          ></p>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>

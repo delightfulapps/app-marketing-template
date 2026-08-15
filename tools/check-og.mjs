@@ -187,8 +187,8 @@ for (const page of pages) checkPage(page);
 
 // A template dropped from the build is silent — a .webc permalink ending in "/"
 // does it, and so does a typo in a filename. Counting pages would not notice;
-// naming them does. The two optional sections are asserted only when they have
-// content, which is the same rule sections.js applies.
+// naming them does. The three optional sections are asserted only when they
+// have content, which is the same rule sections.js applies.
 const expected = [
   "index.html",
   join("pricing", "index.html"),
@@ -197,6 +197,7 @@ const expected = [
   join("terms", "index.html"),
   join("press-kit", "index.html"),
   join("for-llms", "index.html"),
+  ...(sections.guides ? [join("guides", "index.html")] : []),
   ...(sections.blog ? [join("blog", "index.html")] : []),
   ...(sections.changelog ? [join("changelog", "index.html")] : []),
 ];
