@@ -35,6 +35,7 @@ const CARDS = [
   { file: "default", label: null },
   { file: "press-kit", label: "Press Kit" },
   { file: "changelog", label: "Changelog" },
+  { file: "guides", label: "Guides" },
   { file: "blog", label: "Blog" },
   { file: "pricing", label: "Pricing" },
   { file: "legal", label: "Legal" },

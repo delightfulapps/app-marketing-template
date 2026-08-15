@@ -22,4 +22,5 @@ function markdownCount(dir) {
 export default {
   blog: markdownCount("src/blog") > 0,
   changelog: markdownCount("src/content/releases") > 0,
+  guides: markdownCount("src/guides") > 0,
 };

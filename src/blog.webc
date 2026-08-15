@@ -4,7 +4,7 @@ schemaKind: blogIndex
 title: Blog
 eleventyNavigation:
   key: Blog
-  order: 4
+  order: 5
 description: "TODO: what you write about here — release deep-dives, how-tos, company news."
 ogImage: /assets/og/blog.png
 ogImageAlt: "TODO: describe the blog social card."

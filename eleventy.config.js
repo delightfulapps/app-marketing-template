@@ -59,19 +59,29 @@ export default function (eleventyConfig) {
   // The changelog feed is hand-written in src/changelog.xml.njk instead: its
   // entries are anchors on /changelog/, not pages, so feedPlugin has no URL to
   // link them to.
+  //
+  // Guides have no feed at all, deliberately. A feed announces new things; a
+  // guide is revised in place far more often than it is published, so every
+  // edit would either spam subscribers or go unannounced.
 
   // --- Optional sections -----------------------------------------------
 
-  // Delete every post, or every release, and the section stops existing:
-  // ignoring the templates takes the page out of the build, which takes it out
-  // of collections, which takes it out of the nav and the sitemap in turn.
-  // Restore it by adding a markdown file back.
+  // Delete every post, every release, or every guide, and that section stops
+  // existing: ignoring the templates takes the page out of the build, which
+  // takes it out of collections, which takes it out of the nav and the sitemap
+  // in turn. Restore it by adding a markdown file back.
+  //
+  // Guides are the one section that ships with no content, so out of the box
+  // /guides/ is not built at all.
   if (!sections.blog) {
     eleventyConfig.ignores.add("src/blog.webc");
   }
   if (!sections.changelog) {
     eleventyConfig.ignores.add("src/changelog.webc");
     eleventyConfig.ignores.add("src/changelog.xml.njk");
+  }
+  if (!sections.guides) {
+    eleventyConfig.ignores.add("src/guides.webc");
   }
 
   // --- Assets ----------------------------------------------------------
@@ -156,6 +166,23 @@ export default function (eleventyConfig) {
 
   eleventyConfig.addCollection("posts", (api) =>
     api.getFilteredByTag("posts").reverse(),
+  );
+
+  // Guides are reference material rather than a timeline, so they are ordered
+  // the way a reader scans a list — alphabetically, and stably as they are
+  // edited. Sorting in place is safe: getFilteredByTag returns a fresh array.
+  // `title` is coerced because a guide that omits it would otherwise throw
+  // mid-build, rather than failing in check:ai where the message can be read.
+  eleventyConfig.addCollection("guides", (api) =>
+    api
+      .getFilteredByTag("guides")
+      .sort((a, b) =>
+        String(a.data.title ?? "").localeCompare(
+          String(b.data.title ?? ""),
+          "en",
+          { numeric: true, sensitivity: "base" },
+        ),
+      ),
   );
 
   // eleventy-navigation ships Nunjucks filters, which WebC can only reach

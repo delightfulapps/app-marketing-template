@@ -82,6 +82,18 @@ eleventyExcludeFromCollections: true
 {{ item.rawInput | safe | trim }}
 {% endfor %}
 {%- endif %}
+{%- if sections.guides %}
+## Guides
+{% for guide in collections.guides %}
+### {{ guide.data.title | safe }}
+
+{{ guide.url | siteUrl }}{% if guide.data.updated %} — updated {{ guide.data.updated | ymd }}{% endif %}
+{% if guide.data.description %}
+{{ guide.data.description | safe }}
+{% endif %}
+{{ guide.rawInput | safe | trim }}
+{% endfor %}
+{%- endif %}
 {%- if sections.changelog %}
 ## Release notes
 {% for release in collections.releases %}
