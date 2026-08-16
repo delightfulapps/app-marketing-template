@@ -45,6 +45,9 @@ Last updated: {{ mirror.data.updated | ymd }}
 {%- if site.macAppStoreUrl and "TODO" not in site.macAppStoreUrl and site.macAppStoreUrl != site.appStoreUrl %}
 - Mac App Store: {{ site.macAppStoreUrl }}
 {%- endif %}
+{%- for url in site.sameAs %}
+- {% if site.fediverse and url == site.fediverse.url %}Mastodon ({{ site.fediverse.handle }}){% else %}Also at{% endif %}: {{ url }}
+{%- endfor %}
 {% for feature in collections.features %}
 ## {{ feature.data.title | safe }}
 

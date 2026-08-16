@@ -48,6 +48,15 @@ const FIELDS = [
     optional: true,
   },
   {
+    key: "mastodon",
+    prompt: "Mastodon profile URL (blank to skip)",
+    optional: true,
+    clean: (v) => v.replace(/\/+$/, ""),
+    validate: (v) =>
+      /^https?:\/\/[^/]+\/@?[^/]+/.test(v) ||
+      "Expected a profile URL like https://mastodon.social/@yourapp",
+  },
+  {
     key: "themeColor",
     prompt: "Brand colour (hex)",
     validate: (v) => /^#[0-9a-f]{3,8}$/i.test(v) || "Expected a hex colour like #1d4ed8",
@@ -169,6 +178,11 @@ console.log(`Still to do:
      model connects them to this app), technologies, notToBeConfusedWith
   8. Decide src/_data/site.js aiCrawlers: "all" (the default), "search-only"
      (citable but not trainable), or "none"
+  9. If you set a Mastodon URL above: after your first deploy, open Mastodon →
+     Edit profile → Profile metadata and add a row pointing at your site.
+     Mastodon fetches it, finds the rel="me" this template emits, and the link
+     turns green. That half of the round-trip is the only part nothing here
+     can do for you.
 
 The App Store badges are already Apple's official artwork and appear as soon as
 a store URL above is set — no asset work needed there.

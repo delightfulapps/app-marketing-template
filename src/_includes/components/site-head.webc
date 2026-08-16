@@ -75,6 +75,17 @@
   <meta name="twitter:image" :content="$data.seo.image" />
   <meta name="twitter:image:alt" :content="$data.seo.imageAlt" />
 
+  <!-- rel="me" is what Mastodon fetches to verify the site link on your
+       profile; fediverse:creator is what bylines you on a link preview. On
+       every page rather than the homepage, so verification works whichever
+       URL you paste into your profile. Absent unless site.js names one. -->
+  <meta
+    webc:if="$data.site.fediverse"
+    name="fediverse:creator"
+    :content="$data.site.fediverse.handle"
+  />
+  <link webc:if="$data.site.fediverse" rel="me" :href="$data.site.fediverse.url" />
+
   <!-- Smart app banner. Suppressed until site.js carries a real App Store id. -->
   <meta
     webc:if="!$data.site.appStoreId.startsWith('TODO')"

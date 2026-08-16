@@ -23,6 +23,8 @@
 //     URLs rather than by erroring
 //   - llms.txt linking to a page the build never wrote
 //   - a page advertising a markdown mirror that does not exist
+//   - a rel="me" or fediverse:creator that disagrees with site.js or with the
+//     structured data, which verifies as a dead link rather than as an error
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -181,6 +183,14 @@ function checkGraph(page, graph) {
     }
   });
 
+  // The head and the graph must agree about the Mastodon account. A rel="me"
+  // the structured data does not corroborate is the failure nobody spots by
+  // eye — the page looks right and the profile link never verifies.
+  const org = graph.find((node) => node["@id"] === `${ORIGIN}/#organization`);
+  if (site.fediverse && org && !(org.sameAs ?? []).includes(site.fediverse.url)) {
+    fail(page, `#organization sameAs omits ${site.fediverse.url}`);
+  }
+
   const serialised = JSON.stringify(graph);
   if (/TODO[-:]/.test(serialised)) {
     fail(page, "structured data still contains a placeholder");
@@ -311,11 +321,51 @@ function checkMirror(page, html) {
   }
 }
 
+// --- Fediverse --------------------------------------------------------------
+
+// Both tags are derived from one string in site.js, so the thing worth
+// asserting is that the derivation ran and reached the page — an account set
+// but not emitted, or emitted after the account was removed, are the two ways
+// this drifts. Shaped like checkMirror, including the feature-off branch:
+// absent means absent, not blank.
+function checkFediverse(page, html) {
+  const me = html.match(/<link rel="me" href="([^"]+)"/)?.[1];
+  const creator = html.match(
+    /<meta name="fediverse:creator" content="([^"]+)"/,
+  )?.[1];
+
+  if (!site.fediverse) {
+    if (me) fail(page, `emits rel="me" ${me} but site.js names no account`);
+    if (creator) {
+      fail(page, `emits fediverse:creator ${creator} but site.js names no account`);
+    }
+    return;
+  }
+
+  if (me !== site.fediverse.url) {
+    fail(page, `rel="me" is ${me ?? "missing"}, expected ${site.fediverse.url}`);
+  }
+  if (creator !== site.fediverse.handle) {
+    fail(
+      page,
+      `fediverse:creator is ${creator ?? "missing"}, expected ${site.fediverse.handle}`,
+    );
+  }
+}
+
 // --- Run --------------------------------------------------------------------
 
 if (!existsSync(SITE)) {
   console.error(`No ${SITE}/ directory — run \`npm run build\` first.`);
   process.exit(1);
+}
+
+// Checked before anything is read: an unparseable profile URL silently drops
+// every fediverse tag from the build, which otherwise looks exactly like not
+// having set one.
+if (site.mastodon && !site.fediverse) {
+  console.log("\nsite.js");
+  fail("site.js", `mastodon: "${site.mastodon}" is not a profile URL`);
 }
 
 const pages = htmlPages();
@@ -362,6 +412,7 @@ for (const page of pages) {
   }
 
   checkMirror(page, html);
+  checkFediverse(page, html);
 }
 
 for (const id of SHARED_IDS) {
