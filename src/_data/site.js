@@ -55,6 +55,21 @@ const config = {
   appStoreUrl: "TODO: https://apps.apple.com/us/app/your-app/id0000000000",
   macAppStoreUrl: "TODO: https://apps.apple.com/us/app/your-app/id0000000000",
 
+  // --- Product Hunt ----------------------------------------------------
+  // From your launch's embed code (Product Hunt → your product → Promote →
+  // Embed). Two values because they are genuinely two things: the badge image
+  // API only accepts the numeric post id, and the link has to point at the
+  // slug. Both must be set — either one empty hides the homepage badge and the
+  // footer glyph, so a site that never launched on Product Hunt edits nothing.
+  // Ships empty rather than TODO: for the same reason mastodon does.
+  //
+  // The badge image is fetched from Product Hunt at page load rather than
+  // committed here, which is what keeps the upvote count and any award ribbon
+  // current. It is the only third-party request this template makes: leave
+  // these empty and the site talks to nobody but its own origin.
+  productHuntPostId: "",
+  productHuntUrl: "",
+
   // --- Presentation ----------------------------------------------------
   // The single source of truth for brand colour. site-head.webc emits these
   // as CSS custom properties, Tailwind's @theme maps its tokens onto them,
@@ -178,15 +193,71 @@ function fediverseAccount(profileUrl) {
 
 const fediverse = fediverseAccount(config.mastodon);
 
+// The badge is two knobs that only mean something together, and a half-filled
+// pair is worse than an empty one — a badge image with no link, or a link with
+// no badge. So the pair is validated as a unit here and every consumer gates on
+// the result rather than on either raw string.
+//
+// Product Hunt hands out both /posts/<slug> and /products/<slug> URLs depending
+// on where you copied from, and both resolve, so both are taken as given.
+// Anything else is a mis-paste and yields null. The query string is dropped
+// because the badge link carries its own.
+function productHuntLaunch(postId, productUrl) {
+  const id = String(postId ?? "").trim();
+  if (!/^\d+$/.test(id) || !productUrl) return null;
+
+  let parsed;
+  try {
+    parsed = new URL(productUrl);
+  } catch {
+    return null;
+  }
+
+  if (!/^(www\.)?producthunt\.com$/.test(parsed.hostname)) return null;
+
+  // The collection segment is preserved rather than normalised: Product Hunt
+  // migrated posts to /products/ and not every slug survived intact, so
+  // rewriting one into the other is a way to invent a 404.
+  const path = parsed.pathname.replace(/\/+$/, "");
+  if (!/^\/(posts|products)\/[^/]+$/.test(path)) return null;
+
+  const url = `https://www.producthunt.com${path}`;
+  const embed = (theme) =>
+    `https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=${id}&theme=${theme}`;
+
+  return {
+    // The plain product page. What the footer glyph links to, and what the
+    // structured data claims — a canonical URL with campaign parameters
+    // stapled to it is not a canonical URL.
+    url,
+    // The badge's own link. Product Hunt issues its embed with these attached,
+    // and they are what makes the referral show up in a maker's dashboard.
+    badgeUrl: `${url}?embed=true&utm_source=badge-featured&utm_medium=badge`,
+    imageLight: embed("light"),
+    imageDark: embed("dark"),
+  };
+}
+
+const productHunt = productHuntLaunch(
+  config.productHuntPostId,
+  config.productHuntUrl,
+);
+
 export default {
   ...config,
   fediverse,
+  productHunt,
 
   // A Mastodon profile is a `sameAs` entry like any other, so it is merged in
   // here rather than at four call sites — json-ld.webc and everything that
   // prints this list pick it up without knowing Mastodon exists. Deduped
   // through the same normaliser, so listing it by hand above is harmless.
   // Mastodon first: the surfaces that print this list print it in order.
+  //
+  // The Product Hunt page is deliberately NOT merged in. This list is the
+  // Organization's, and every entry in it has to be the publisher; a Product
+  // Hunt listing is a page about the app. It is emitted as a sameAs on the
+  // SoftwareApplication node in json-ld.webc instead, where the claim is true.
   sameAs: fediverse
     ? [
         fediverse.url,

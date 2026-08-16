@@ -48,6 +48,21 @@ const FIELDS = [
     optional: true,
   },
   {
+    key: "productHuntPostId",
+    prompt: "Product Hunt post ID (digits only, blank to skip)",
+    optional: true,
+    validate: (v) => /^\d+$/.test(v) || "Expected digits only, e.g. 123456",
+  },
+  {
+    key: "productHuntUrl",
+    prompt: "Product Hunt product URL (blank to hide the badge)",
+    optional: true,
+    clean: (v) => v.split("?")[0].replace(/\/+$/, ""),
+    validate: (v) =>
+      /^https?:\/\/(www\.)?producthunt\.com\/(posts|products)\/[^/]+$/.test(v) ||
+      "Expected a URL like https://www.producthunt.com/products/your-app",
+  },
+  {
     key: "mastodon",
     prompt: "Mastodon profile URL (blank to skip)",
     optional: true,

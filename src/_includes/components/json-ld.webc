@@ -158,6 +158,10 @@
       publisher: { "@id": `${origin(site)}/#organization` },
       downloadUrl: storeUrl,
       installUrl: storeUrl,
+      // The app's listing elsewhere, on this node rather than the Organization
+      // one: a Product Hunt page identifies the product, not the company that
+      // publishes it. compact() drops it when there is no launch.
+      sameAs: site.productHunt ? [site.productHunt.url] : undefined,
       screenshot: shots,
       softwareVersion: latest ? real(latest.data.version) : undefined,
       releaseNotes: latest ? plain(latest.templateContent) || undefined : undefined,
