@@ -29,5 +29,12 @@
     <div class="mt-9">
       <store-badges></store-badges>
     </div>
+
+    <!-- Gated here as well as inside the component: WebC keeps the host tag in
+         the output, so without this an unlaunched site would carry an empty
+         element and its margin under the store badges. -->
+    <div webc:if="$data.site.productHunt" class="mt-6">
+      <product-hunt-badge></product-hunt-badge>
+    </div>
   </div>
 </section>

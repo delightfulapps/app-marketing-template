@@ -1,0 +1,40 @@
+<!-- Product Hunt's live badge. The upvote count and any award ribbon are drawn
+     by Product Hunt when the browser asks for the image, which is the whole
+     reason this one is hotlinked rather than committed to src/assets/ the way
+     Apple's are — a snapshot would freeze the count on launch day.
+
+     Renders nothing until both Product Hunt knobs in site.js are set, and
+     nothing computed here: site.js validated the pair and built both URLs, so
+     this is the same $data.site gate every other optional component uses.
+
+     250x54 is Product Hunt's own size. Stated on the element because a remote
+     image with no dimensions would reflow the hero as it arrives.
+
+     Eager, because this sits above the fold — the image plugin's lazy default
+     does not reach it, and would be wrong here if it did. Low fetch priority
+     because it is social proof about the app: it should lose the race against
+     the icon and the store badges above it. -->
+<a
+  webc:if="$data.site.productHunt"
+  :href="$data.site.productHunt.badgeUrl"
+  target="_blank"
+  rel="noopener"
+  class="inline-block transition-opacity hover:opacity-85"
+>
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      :srcset="$data.site.productHunt.imageDark"
+    />
+    <img
+      :src="$data.site.productHunt.imageLight"
+      :alt="`${$data.site.name} — featured on Product Hunt`"
+      width="250"
+      height="54"
+      loading="eager"
+      decoding="async"
+      fetchpriority="low"
+      eleventy:ignore
+    />
+  </picture>
+</a>

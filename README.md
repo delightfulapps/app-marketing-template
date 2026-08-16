@@ -31,7 +31,7 @@ npm run serve
 
 | To change | Edit |
 | --- | --- |
-| Name, URL, emails, store links, brand colour | `src/_data/site.js` |
+| Name, URL, emails, store links, Product Hunt badge, brand colour | `src/_data/site.js` |
 | Feature cards | add markdown to `src/content/features/` |
 | FAQ (also feeds the FAQPage structured data) | `src/content/faq/` |
 | Pricing tiers | `src/content/pricing/` |
@@ -246,6 +246,21 @@ still carries every page's content.
   purchase has one product page for every platform: set `appStoreUrl` and
   `macAppStoreUrl` to the same URL and only the App Store badge renders, which
   is the correct one for a single listing.
+- **The Product Hunt badge is the one thing a visitor's browser fetches from
+  somewhere else.** Set `productHuntPostId` and `productHuntUrl` in `site.js` and
+  the badge appears in the hero under the store badges, a small Product Hunt glyph
+  joins the footer icons, and the post lands in the `SoftwareApplication` node's
+  `sameAs` — the app's node, not the Organization's, because a Product Hunt page
+  identifies the product rather than the company publishing it. The badge image is
+  hotlinked to `api.producthunt.com` on purpose: it is drawn per request,
+  so the upvote count and any "#1 Product of the Day" ribbon stay current instead
+  of freezing on the day you committed a copy. The light and dark artwork is
+  chosen through the same `<picture>` mechanism the store badges use. Leave both
+  knobs empty — the default — and nothing renders and the site talks to no origin
+  but its own. If you want the badge but not the third-party request, download
+  both themes from Product Hunt into `src/assets/` and point `imageLight` and
+  `imageDark` in `src/_data/site.js` at them; the count stops updating, which is
+  the trade.
 
 ## CI and deploying
 
