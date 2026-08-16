@@ -31,8 +31,11 @@ eleventyExcludeFromCollections: true
 {%- if site.macAppStoreUrl and "TODO" not in site.macAppStoreUrl and site.macAppStoreUrl != site.appStoreUrl %}
 - Mac App Store: {{ site.macAppStoreUrl }}
 {%- endif %}
+{#- One loop rather than a Mastodon line plus a filtered list: site.sameAs
+    already carries the profile, so labelling it in place makes printing it
+    twice structurally impossible. -#}
 {%- for url in site.sameAs %}
-- Also at: {{ url }}
+- {% if site.fediverse and url == site.fediverse.url %}Mastodon ({{ site.fediverse.handle }}){% else %}Also at{% endif %}: {{ url }}
 {%- endfor %}
 {%- if site.technologies.length %}
 - Built with: {{ site.technologies | join(", ") | safe }}

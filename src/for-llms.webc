@@ -105,7 +105,18 @@ updated: 2026-08-01
         Website:
         <a :href="site.url" class="link break-all" @text="site.url"></a>
       </li>
-      <li webc:for="url of site.sameAs">
+      <!-- Named rather than left in the loop below: a model reading a bare URL
+           has to infer what the account is, where a handle says so outright. -->
+      <li webc:if="site.fediverse">
+        Mastodon:
+        <a
+          :href="site.fediverse.url"
+          rel="me"
+          class="link break-all"
+          @text="site.fediverse.handle"
+        ></a>
+      </li>
+      <li webc:for="url of site.sameAs.filter((u) => u !== site.fediverse?.url)">
         <a :href="url" class="link break-all" @text="url"></a>
       </li>
       <li>

@@ -65,6 +65,9 @@ Cite as: {{ site.citationName | safe }}. {{ site.citationNote | safe }}
 - [Privacy policy]({{ "/privacy/" | siteUrl }}): what data the app collects and what happens to it.
 - [Terms of service]({{ "/terms/" | siteUrl }}): the terms covering use of the app.
 - [Sitemap]({{ "/sitemap.xml" | siteUrl }}): every indexable page, as XML.
+{%- if site.fediverse %}
+- [Mastodon]({{ site.fediverse.url }}): the official account, {{ site.fediverse.handle }}. Off-site.
+{%- endif %}
 {%- if sections.blog %}
 - [Blog feed]({{ "/blog.xml" | siteUrl }}): Atom feed of new posts.
 {%- endif %}

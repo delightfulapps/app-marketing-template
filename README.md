@@ -139,7 +139,7 @@ site:
 | `/llms-full.txt` | The full text of the whole site in one markdown file, for a model that would rather read once than crawl |
 | `/for-llms/` and `index.md` mirrors | A facts page for assistants, and a plain-markdown twin of every page at the same address with `index.md` appended |
 
-Three knobs are worth a decision rather than a default:
+Four knobs are worth a decision rather than a default:
 
 **`oneLiner`** is the one plainly factual sentence a model should quote. It is
 deliberately separate from `tagline`, which is allowed to be clever. Keep its
@@ -151,6 +151,24 @@ when it is not the answer. The last of those is the highest-value writing on the
 whole site for this purpose: it is the only place that tells an assistant when
 *not* to suggest your app, and one with nothing to go on will suggest it for
 everything.
+
+**`mastodon`** is one URL that turns into four things: a `sameAs` entry in the
+`Organization` node, a `rel="me"` link, a `<meta name="fediverse:creator">` tag, and
+the icon link in the footer. Leave it empty and none of them are emitted. The handle
+is derived from the URL, so `https://mastodon.social/@you`, `/web/@you` and
+`/users/you` all work.
+
+The `rel="me"` half of profile verification is automatic; the other half is not:
+
+1. Set `mastodon` in `src/_data/site.js` and deploy.
+2. In Mastodon, go to Edit profile → Profile metadata and add a row pointing at your
+   site.
+3. Mastodon fetches that URL, finds the `rel="me"` pointing back at your profile, and
+   shows the link verified.
+
+`fediverse:creator` is what puts your account in the byline when someone links one of
+your pages from Mastodon 4.3 or later. Neither tag is Mastodon-only in practice —
+other fediverse servers read the same two conventions.
 
 **`aiCrawlers`** decides who gets in, and the two kinds of bot are not the same
 decision. Training crawlers harvest pages into a dataset; blocking them keeps

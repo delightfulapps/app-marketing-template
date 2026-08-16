@@ -2,7 +2,7 @@
 // `npm run setup` rewrites this file interactively; you can also just edit it.
 // Every TODO: below must be replaced before launch — `npm run check:todos` enforces it.
 
-export default {
+const config = {
   // --- Identity --------------------------------------------------------
   name: "TODO: App Name",
   tagline: "TODO: one-line pitch, under 60 characters.",
@@ -37,6 +37,13 @@ export default {
   // Ships empty on purpose: a placeholder here would force every site with no
   // Mastodon account to edit a knob it does not want.
   sameAs: [],
+
+  // Your Mastodon profile URL, e.g. https://mastodon.social/@yourapp. Drives
+  // four things: the footer link, the rel="me" that lets Mastodon verify the
+  // website link on your profile, the fediverse:creator byline on link
+  // previews of your pages, and a schema.org sameAs entry — it is folded into
+  // the list above, so do not enter it twice. Empty omits all four.
+  mastodon: "",
 
   // --- App Store -------------------------------------------------------
   // appStoreId powers the apple-itunes-app smart banner.
@@ -133,4 +140,59 @@ export default {
   // The single highest-value entry on /for-llms/ if your name collides with
   // anything: { name: "…", note: "…" }. Empty means the section is omitted.
   notToBeConfusedWith: [],
+};
+
+// --- Derived -----------------------------------------------------------
+// Not knobs. Nothing below is meant to be edited, and `npm run setup` only
+// ever rewrites the string literals above.
+
+// A Mastodon profile URL is `https://instance/@user`, but the same profile
+// gets copied out of the address bar as /web/@user or /users/user depending on
+// where you clicked, with or without a trailing slash. All of them carry the
+// username as the last path segment, which is the only part we need, so all of
+// them normalise to the canonical form here. Anything unparseable yields null
+// and every consumer is gated on that rather than on the raw string — a
+// half-typed URL must not reach a rel="me".
+function fediverseAccount(profileUrl) {
+  if (!profileUrl) return null;
+
+  let parsed;
+  try {
+    parsed = new URL(profileUrl);
+  } catch {
+    return null;
+  }
+
+  const user = (parsed.pathname.split("/").filter(Boolean).pop() ?? "").replace(
+    /^@/,
+    "",
+  );
+  if (!user) return null;
+
+  return {
+    url: `${parsed.origin}/@${user}`,
+    handle: `@${user}@${parsed.host}`,
+    server: parsed.host,
+  };
+}
+
+const fediverse = fediverseAccount(config.mastodon);
+
+export default {
+  ...config,
+  fediverse,
+
+  // A Mastodon profile is a `sameAs` entry like any other, so it is merged in
+  // here rather than at four call sites — json-ld.webc and everything that
+  // prints this list pick it up without knowing Mastodon exists. Deduped
+  // through the same normaliser, so listing it by hand above is harmless.
+  // Mastodon first: the surfaces that print this list print it in order.
+  sameAs: fediverse
+    ? [
+        fediverse.url,
+        ...config.sameAs.filter(
+          (url) => fediverseAccount(url)?.url !== fediverse.url,
+        ),
+      ]
+    : config.sameAs,
 };
